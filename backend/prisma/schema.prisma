@@ -38,3 +38,9 @@ model Session {
   lastUsedAt   DateTime @default(now())
   company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
+
+model PgSession {
+  sid    String   @id
+  sess   Json
+  expire DateTime
+}

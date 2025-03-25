@@ -56,3 +56,12 @@ export type VerifyCallback = (
   company?: VerifyCallbackDocument,
   info?: any
 ) => void;
+
+export interface RefreshTokenPayload {
+  sessionId: string;
+}
+
+export interface AccessTokenPayload {
+  companyId: number;
+  sessionId: string;
+}
