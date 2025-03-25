@@ -160,3 +160,69 @@ export const updateCompanyProfile = asyncHandler(
       );
   }
 );
+
+export const getCurrentSession = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.company) {
+      throw new ApiError(401, "Unauthorized Access. Please login again", [
+        "Unauthorized Access. Please login again",
+      ]);
+    }
+    const currentSession = req.currentSession;
+    const currentCompany = req.company;
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { currentCompany, currentSession },
+          "Current Session fetched successfully"
+        )
+      );
+  }
+);
+
+export const getCurrentCompany = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.company) {
+      throw new ApiError(401, "Unauthorized Access. Please login again", [
+        "Unauthorized Access. Please login again",
+      ]);
+    }
+
+    const currentCompany = req.company;
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          currentCompany,
+          "Fetch current company successfully"
+        )
+      );
+  }
+);
+
+export const getAllSessions = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.company) {
+      throw new ApiError(401, "Unauthorized Access. Please login again", [
+        "Unauthorized Access. Please login again",
+      ]);
+    }
+    const companyId = req.company.id;
+    const sessions = await prisma.session.findMany({
+      where: { companyId },
+      omit: {
+        refreshToken: true,
+      },
+    });
+    if (!sessions) {
+      throw new ApiError(404, "No sessions found", ["No sessions found"]);
+    }
+    return res
+      .status(200)
+      .json(new ApiResponse(200, sessions, "Sessions fetched successfully"));
+  }
+);
