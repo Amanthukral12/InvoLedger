@@ -28,7 +28,6 @@ export interface CustomSession {
   id: string;
   sessionId: string;
   companyId: number;
-  refreshToken: string;
   deviceInfo: string | null;
   expiresAt: Date;
   lastUsedAt: Date;

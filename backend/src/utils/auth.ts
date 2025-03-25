@@ -24,3 +24,14 @@ export const verifyRefreshToken = (
     throw new Error("Invalid token");
   }
 };
+
+export const verifyAccessToken = (token: string): AccessTokenPayload | null => {
+  try {
+    return jwt.verify(
+      token,
+      process.env.ACCESS_TOKEN_SECRET!
+    ) as AccessTokenPayload;
+  } catch (error) {
+    throw new Error("Invalid Access Token");
+  }
+};
