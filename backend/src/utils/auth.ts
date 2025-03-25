@@ -11,3 +11,16 @@ export const generateAccessToken = (payload: AccessTokenPayload): string => {
     expiresIn: "15m",
   });
 };
+
+export const verifyRefreshToken = (
+  token: string
+): RefreshTokenPayload | null => {
+  try {
+    return jwt.verify(
+      token,
+      process.env.REFRESH_TOKEN_SECRET!
+    ) as RefreshTokenPayload;
+  } catch (error) {
+    throw new Error("Invalid token");
+  }
+};

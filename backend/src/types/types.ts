@@ -6,6 +6,7 @@ export interface CompanyDocument {
   avatar: string | null;
   GST: string | null;
   Address: string | null;
+  PhoneNumber: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
