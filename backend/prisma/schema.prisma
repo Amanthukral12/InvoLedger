@@ -25,6 +25,7 @@ model Company {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   sessions    Session[]
+  clients     Client[]
 }
 
 model Session {
@@ -38,6 +39,22 @@ model Session {
   expiresAt    DateTime
   lastUsedAt   DateTime @default(now())
   company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model Client {
+  id          String   @id @default(uuid())
+  name        String
+  address     String
+  GSTIN       String   @unique
+  email       String?
+  phonenumber String?
+  companyId   Int
+  state       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, GSTIN])
 }
 
 model PgSession {
