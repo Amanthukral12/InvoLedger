@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import passport from "./config/passport";
 import authRoutes from "./routes/auth.routes";
+import clientRoutes from "./routes/client.routes";
 import PgSession from "connect-pg-simple";
 import session from "express-session";
 dotenv.config();
@@ -37,6 +38,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/", authRoutes);
+app.use("/client", clientRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running");
