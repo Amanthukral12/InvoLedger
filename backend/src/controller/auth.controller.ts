@@ -138,7 +138,17 @@ export const updateCompanyProfile = asyncHandler(
     }
     const companyId = req.company.id;
 
-    const { name, GST, Address, PhoneNumber } = req.body;
+    const {
+      name,
+      GST,
+      Address,
+      PhoneNumber,
+      state,
+      companyOwnerSignnature,
+      companyBankName,
+      companyBankAccountNumber,
+      companyBankIFSC,
+    } = req.body;
 
     const companyDetails = await prisma.company.update({
       where: { id: companyId },
@@ -147,6 +157,19 @@ export const updateCompanyProfile = asyncHandler(
         GST: GST !== undefined ? GST : undefined,
         Address: Address !== undefined ? Address : undefined,
         PhoneNumber: PhoneNumber !== undefined ? PhoneNumber : undefined,
+        state: state !== undefined ? state : undefined,
+        companyOwnerSignnature:
+          companyOwnerSignnature !== undefined
+            ? companyOwnerSignnature
+            : undefined,
+        companyBankName:
+          companyBankName !== undefined ? companyBankName : undefined,
+        companyBankAccountNumber:
+          companyBankAccountNumber !== undefined
+            ? companyBankAccountNumber
+            : undefined,
+        companyBankIFSC:
+          companyBankIFSC !== undefined ? companyBankIFSC : undefined,
       },
     });
     return res

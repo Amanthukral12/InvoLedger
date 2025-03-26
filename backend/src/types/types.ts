@@ -7,6 +7,11 @@ export interface CompanyDocument {
   GST: string | null;
   Address: string | null;
   PhoneNumber: string | null;
+  state: string | null;
+  companyOwnerSignnature: string | null;
+  companyBankName: string | null;
+  companyBankAccountNumber: string | null;
+  companyBankIFSC: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

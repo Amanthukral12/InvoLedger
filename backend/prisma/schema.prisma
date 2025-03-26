@@ -14,18 +14,23 @@ datasource db {
 }
 
 model Company {
-  id          Int       @id @default(autoincrement())
-  googleId    String    @unique
-  email       String    @unique
-  name        String
-  avatar      String?
-  GST         String?
-  Address     String?
-  PhoneNumber String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  sessions    Session[]
-  clients     Client[]
+  id                       Int       @id @default(autoincrement())
+  googleId                 String    @unique
+  email                    String    @unique
+  name                     String
+  avatar                   String?
+  GST                      String?
+  Address                  String?
+  PhoneNumber              String?
+  state                    String?
+  companyOwnerSignnature   String?
+  companyBankName          String?
+  companyBankAccountNumber String?
+  companyBankIFSC          String?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+  sessions                 Session[]
+  clients                  Client[]
 }
 
 model Session {
