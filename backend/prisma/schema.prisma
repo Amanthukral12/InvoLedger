@@ -31,6 +31,7 @@ model Company {
   updatedAt                DateTime  @updatedAt
   sessions                 Session[]
   clients                  Client[]
+  invoices                 Invoice[]
 }
 
 model Session {
@@ -47,23 +48,64 @@ model Session {
 }
 
 model Client {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   name        String
   address     String
-  GSTIN       String   @unique
+  GSTIN       String    @unique
   email       String?
   phonenumber String?
   companyId   Int
   state       String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  company     Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  invoices    Invoice[]
 
   @@unique([companyId, GSTIN])
+}
+
+model Invoice {
+  id                 String       @id @default(uuid())
+  invoiceNumber      String
+  invoiceDate        DateTime     @default(now())
+  companyId          Int
+  clientId           String
+  shipToPartyId      String?
+  shipToPartyDetails ShipToParty? @relation(fields: [shipToPartyId], references: [id], onDelete: SetNull)
+  amount             Float
+  cartage            Float?
+  subTotal           Float
+  sgst               Float?
+  cgst               Float?
+  igst               Float?
+  totalAmount        Float
+  totalAmountInWords String
+  reverseCharge      Boolean      @default(false)
+  transportMode      String
+  vehicleNumber      String
+  placeOfSupply      String
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client  Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
 }
 
 model PgSession {
   sid    String   @id
   sess   Json
   expire DateTime
+}
+
+model ShipToParty {
+  id        String    @id @default(uuid())
+  name      String
+  address   String
+  GSTIN     String    @unique
+  state     String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Invoice   Invoice[]
+
+  @@unique([GSTIN, id])
 }
