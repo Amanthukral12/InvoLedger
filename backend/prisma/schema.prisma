@@ -14,9 +14,9 @@ datasource db {
 }
 
 model Company {
-  id                       Int       @id @default(autoincrement())
-  googleId                 String    @unique
-  email                    String    @unique
+  id                       Int           @id @default(autoincrement())
+  googleId                 String        @unique
+  email                    String        @unique
   name                     String
   avatar                   String?
   GST                      String?
@@ -27,11 +27,12 @@ model Company {
   companyBankName          String?
   companyBankAccountNumber String?
   companyBankIFSC          String?
-  createdAt                DateTime  @default(now())
-  updatedAt                DateTime  @updatedAt
+  createdAt                DateTime      @default(now())
+  updatedAt                DateTime      @updatedAt
   sessions                 Session[]
   clients                  Client[]
   invoices                 Invoice[]
+  shipToParty              ShipToParty[]
 }
 
 model Session {
@@ -71,7 +72,7 @@ model Invoice {
   companyId          Int
   clientId           String
   shipToPartyId      String?
-  shipToPartyDetails ShipToParty? @relation(fields: [shipToPartyId], references: [id], onDelete: SetNull)
+  shipToParty        ShipToParty? @relation(fields: [shipToPartyId], references: [id], onDelete: SetNull)
   amount             Float
   cartage            Float?
   subTotal           Float
@@ -87,8 +88,24 @@ model Invoice {
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
-  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  client  Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client       Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  invoiceItems InvoiceItem[]
+
+  @@unique([companyId, invoiceNumber])
+}
+
+model InvoiceItem {
+  id          String   @id @default(uuid())
+  invoiceId   String
+  description String
+  quantity    Int
+  unitPrice   Float
+  hsnCode     String
+  amount      Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 }
 
 model PgSession {
@@ -99,13 +116,15 @@ model PgSession {
 
 model ShipToParty {
   id        String    @id @default(uuid())
+  companyId Int
   name      String
   address   String
   GSTIN     String    @unique
   state     String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  company   Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
   Invoice   Invoice[]
 
-  @@unique([GSTIN, id])
+  @@unique([GSTIN, companyId])
 }
