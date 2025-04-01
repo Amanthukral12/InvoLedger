@@ -133,7 +133,6 @@ export const getClientById = asyncHandler(
 
     const companyId = req.company.id;
     const clientId = req.params.id;
-    const { name, address, GSTIN, email, phonenumber, state } = req.body;
 
     const clientExists = await prisma.client.findFirst({
       where: { id: clientId, companyId },

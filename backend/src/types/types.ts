@@ -40,6 +40,18 @@ export interface CustomSession {
   updatedAt: Date;
 }
 
+export interface InvoiceItem {
+  id: string;
+  invoiceId: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  hsnCode: string;
+  amount: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface GoogleStrategyOptions {
   clientID: string;
   clientSecret: string;

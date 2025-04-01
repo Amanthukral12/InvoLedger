@@ -5,8 +5,10 @@ import passport from "./config/passport";
 import authRoutes from "./routes/auth.routes";
 import clientRoutes from "./routes/client.routes";
 import transporterRoutes from "./routes/transporters.routes";
+import invoiceRoutes from "./routes/invoice.routes";
 import PgSession from "connect-pg-simple";
 import session from "express-session";
+
 dotenv.config();
 const app = express();
 
@@ -41,6 +43,7 @@ app.use(passport.session());
 app.use("/", authRoutes);
 app.use("/client", clientRoutes);
 app.use("/transporters", transporterRoutes);
+app.use("/invoice", invoiceRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running");
