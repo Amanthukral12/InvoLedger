@@ -40,6 +40,55 @@ export interface CustomSession {
   updatedAt: Date;
 }
 
+export interface ClientDocument {
+  id: string;
+  name: string;
+  address: string;
+  GSTIN: string;
+  email: string | null;
+  phonenumber: string | null;
+  companyId: number;
+  state: string;
+  company: CompanyDocument | null;
+}
+
+export interface ShipToPartyDocument {
+  id: string;
+  name: string;
+  address: string;
+  GSTIN: string;
+  email: string | null;
+  phonenumber: string | null;
+  companyId: number;
+  state: string;
+  company: CompanyDocument | null;
+}
+
+export interface InvoiceDocument {
+  id: string;
+  invoiceNumber: string;
+  invoiceDate: Date;
+  companyId: number;
+  clientId: string;
+  shipToPartyId: string | null;
+  amount: number;
+  cartage: number | null;
+  subTotal: number;
+  sgst: number | null;
+  cgst: number | null;
+  igst: number | null;
+  totalAmount: number;
+  totalAmountInWords: string;
+  reverseCharge: boolean;
+  transportMode: string;
+  vehicleNumber: string;
+  placeOfSupply: string;
+  company: CompanyDocument;
+  client: ClientDocument;
+  shipToParty: ShipToPartyDocument;
+  invoiceItems: InvoiceItem[];
+}
+
 export interface InvoiceItem {
   id: string;
   invoiceId: string;
@@ -48,8 +97,6 @@ export interface InvoiceItem {
   unitPrice: number;
   hsnCode: string;
   amount: number;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface GoogleStrategyOptions {
