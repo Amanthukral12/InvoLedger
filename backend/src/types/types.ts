@@ -49,7 +49,6 @@ export interface ClientDocument {
   phonenumber: string | null;
   companyId: number;
   state: string;
-  company: CompanyDocument | null;
 }
 
 export interface ShipToPartyDocument {
@@ -57,11 +56,8 @@ export interface ShipToPartyDocument {
   name: string;
   address: string;
   GSTIN: string;
-  email: string | null;
-  phonenumber: string | null;
   companyId: number;
   state: string;
-  company: CompanyDocument | null;
 }
 
 export interface InvoiceDocument {
@@ -85,7 +81,7 @@ export interface InvoiceDocument {
   placeOfSupply: string;
   company: CompanyDocument;
   client: ClientDocument;
-  shipToParty: ShipToPartyDocument;
+  shipToParty: ShipToPartyDocument | null;
   invoiceItems: InvoiceItem[];
 }
 

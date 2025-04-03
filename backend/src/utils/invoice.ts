@@ -4,13 +4,17 @@ import path from "path";
 import { InvoiceDocument } from "../types/types";
 import { format } from "date-fns";
 
-export const generateInvoicePdf = (invoiceData: InvoiceDocument, res: any) => {
+export const generateInvoicePdf = (
+  invoiceData: InvoiceDocument,
+  copyName: string,
+  res: any
+) => {
   const doc = new PDFDocument({ size: "A4", margin: 30 });
   const pageWidth = doc.page.width - 0.2 * doc.page.width;
   let yPosition;
   res.setHeader(
     "Content-Disposition",
-    `attachment; filename=${invoiceData.client.name}_${invoiceData.invoiceNumber}.pdf`
+    `attachment; filename="${invoiceData.client.name}_${copyName}_${invoiceData.invoiceNumber}.pdf"`
   );
   res.setHeader("Content-Type", "application/pdf");
 
@@ -19,6 +23,7 @@ export const generateInvoicePdf = (invoiceData: InvoiceDocument, res: any) => {
     .fontSize(16)
     .font("Helvetica-Bold")
     .text(`${invoiceData.company.name}`, { align: "center" });
+  doc.fontSize(10).font("Helvetica").text(`${copyName}`, { align: "right" });
 
   doc
     .fontSize(12)
@@ -54,7 +59,9 @@ export const generateInvoicePdf = (invoiceData: InvoiceDocument, res: any) => {
 
   yPosition = doc.y;
 
-  doc.text(`Invoice No: ${invoiceData.invoiceNumber}`, 50, yPosition);
+  doc
+    .fontSize(11)
+    .text(`Invoice No: ${invoiceData.invoiceNumber}`, 50, yPosition);
   doc.text(
     `Invoice Date: ${format(new Date(invoiceData.invoiceDate), "dd/MM/yyyy")}`,
     50,
@@ -87,18 +94,20 @@ export const generateInvoicePdf = (invoiceData: InvoiceDocument, res: any) => {
     .text(`GSTIN No: ${invoiceData.client.GSTIN}`, 50, doc.y)
     .text(`State: ${invoiceData.client.state}`, 50, doc.y);
 
-  doc.y = yPosition;
-  doc.font("Helvetica-Bold").text("Ship to Party", 350, yPosition);
-  doc
-    .font("Helvetica")
-    .text(`Name: ${invoiceData.shipToParty.name}`, 350, doc.y);
-  doc
-    .text(`Address: ${invoiceData.shipToParty.address}`, 350, doc.y, {
-      width: 200,
-    })
-    .text(`GSTIN No: ${invoiceData.shipToParty.GSTIN}`, 350, doc.y)
-    .text(`State: ${invoiceData.shipToParty.state}`, 350, doc.y);
+  if (invoiceData.shipToParty) {
+    doc.y = yPosition;
+    doc.font("Helvetica-Bold").text("Ship to Party", 350, yPosition);
 
+    doc
+      .font("Helvetica")
+      .text(`Name: ${invoiceData?.shipToParty.name}`, 350, doc.y);
+    doc
+      .text(`Address: ${invoiceData.shipToParty.address}`, 350, doc.y, {
+        width: 200,
+      })
+      .text(`GSTIN No: ${invoiceData.shipToParty.GSTIN}`, 350, doc.y)
+      .text(`State: ${invoiceData.shipToParty.state}`, 350, doc.y);
+  }
   doc.moveDown(2);
 
   const centerX = pageWidth / 2 + 30;
@@ -202,11 +211,10 @@ export const generateInvoicePdf = (invoiceData: InvoiceDocument, res: any) => {
   doc.font("Helvetica").text(invoiceData.totalAmountInWords, 50, doc.y);
 
   const labelX = 400;
-  const valueX = 520; // Adjust this value based on your needs
+  const valueX = 520;
 
   doc.y = yPosition;
 
-  // For each line item, use separate text calls for label and value
   doc.font("Helvetica").text("Amount:", labelX, yPosition);
   doc
     .font("Helvetica")
@@ -248,14 +256,12 @@ export const generateInvoicePdf = (invoiceData: InvoiceDocument, res: any) => {
       });
   }
 
-  // Add a line before total amount (optional)
   doc
     .moveTo(labelX, doc.y)
     .lineTo(valueX + 50, doc.y)
     .stroke();
   doc.moveDown(1);
 
-  // Make Total Amount bold
   doc
     .font("Helvetica-Bold")
     .text("Total Amount:", labelX, yPosition + 50)
@@ -265,27 +271,22 @@ export const generateInvoicePdf = (invoiceData: InvoiceDocument, res: any) => {
 
   if (invoiceData.company.companyBankAccountNumber) {
     doc.moveDown(1);
-    doc.font("Helvetica-Bold").text("Bank Details", 50, doc.y);
+    doc.font("Helvetica-Bold").fontSize(11).text("Bank Details", 50, doc.y);
     doc
       .font("Helvetica")
-      .text(
-        `Bank Name: ${invoiceData.company.companyBankName}`,
-        50,
-        doc.y + 15
-      );
+      .text(`Bank Name: ${invoiceData.company.companyBankName}`, 50, doc.y);
     doc.text(
       `Account No: ${invoiceData.company.companyBankAccountNumber}`,
       50,
-      doc.y + 15
+      doc.y
     );
-    doc.text(
-      `IFSC Code: ${invoiceData.company.companyBankIFSC}`,
-      50,
-      doc.y + 15
-    );
+    doc.text(`IFSC Code: ${invoiceData.company.companyBankIFSC}`, 50, doc.y);
+    doc.moveDown(2);
+  } else {
+    doc.moveDown(5);
   }
 
-  doc.moveDown(2);
+  doc.text(`${invoiceData.company.name}`, 400, doc.y, { align: "right" });
   doc.fontSize(10).text("Authorized Signatory", 400, doc.y, { align: "right" });
   doc.end();
 };

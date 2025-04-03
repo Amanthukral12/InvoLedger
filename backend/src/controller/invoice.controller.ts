@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError";
 import prisma from "../db/db";
 import { InvoiceItem } from "../types/types";
 import { ApiResponse } from "../utils/ApiResponse";
+import { generateInvoicePdf } from "../utils/invoice";
 
 export const createInvoice = asyncHandler(
   async (req: Request, res: Response) => {
@@ -97,7 +98,7 @@ export const deleteInvoice = asyncHandler(
 
     if (!invoiceExists) {
       throw new ApiError(404, "Invoice not found", [
-        "Unauthorized Access. Please login again",
+        "Invoice not found. Please try again.",
       ]);
     }
 
@@ -133,7 +134,7 @@ export const getInvoiceById = asyncHandler(
 
     if (!invoiceExists) {
       throw new ApiError(404, "Invoice not found", [
-        "Unauthorized Access. Please login again",
+        "Invoice not found. Please try again.",
       ]);
     }
 
@@ -184,7 +185,7 @@ export const updateInvoice = asyncHandler(
 
     if (!invoiceExists) {
       throw new ApiError(404, "Invoice not found", [
-        "Unauthorized Access. Please login again",
+        "Invoice not found. Please try again.",
       ]);
     }
 
@@ -241,17 +242,25 @@ export const generateInvoice = asyncHandler(
     }
     const companyId = req.company.id;
     const invoiceId = req.params.id;
+    const copyName = req.body.copyName;
     const invoiceExists = await prisma.invoice.findUnique({
       where: {
         id: invoiceId,
         companyId: Number(companyId),
       },
+      include: {
+        invoiceItems: true,
+        client: true,
+        shipToParty: true,
+        company: true,
+      },
     });
 
     if (!invoiceExists) {
       throw new ApiError(404, "Invoice not found", [
-        "Unauthorized Access. Please login again",
+        "Invoice not found. Please try again.",
       ]);
     }
+    generateInvoicePdf(invoiceExists, copyName, res);
   }
 );
