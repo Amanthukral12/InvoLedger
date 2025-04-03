@@ -264,3 +264,36 @@ export const generateInvoice = asyncHandler(
     generateInvoicePdf(invoiceExists, copyName, res);
   }
 );
+
+export const getAllInvoicesForCompany = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.company) {
+      throw new ApiError(401, "Unauthorized Access. Please login again", [
+        "Unauthorized Access. Please login again",
+      ]);
+    }
+    const companyId = req.company.id;
+    const { page = 1, limit = 10 } = req.query;
+    const offset = (Number(page) - 1) * Number(limit);
+
+    const invoices = await prisma.invoice.findMany({
+      where: {
+        companyId,
+      },
+      select: {
+        invoiceNumber: true,
+        id: true,
+        client: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      skip: Number(offset),
+      take: Number(limit),
+    });
+    return res
+      .status(200)
+      .json(new ApiResponse(200, invoices, "Invoices fetched successfully"));
+  }
+);
