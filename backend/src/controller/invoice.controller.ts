@@ -282,6 +282,7 @@ export const getAllInvoicesForCompany = asyncHandler(
       },
       select: {
         invoiceNumber: true,
+        invoiceDate: true,
         id: true,
         client: {
           select: {
