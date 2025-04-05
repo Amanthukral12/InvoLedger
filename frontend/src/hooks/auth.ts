@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import { Company, SessionResponse } from "../types/types";
 import useAuthStore from "../store/authStore";
+import api from "../utils/api";
 
 export const useAuth = () => {
   const queryClient = useQueryClient();
@@ -10,7 +10,7 @@ export const useAuth = () => {
   const sessionQuery = useQuery({
     queryKey: ["session"],
     queryFn: async () => {
-      const { data } = await axios.get<SessionResponse>("/auth/session");
+      const { data } = await api.get<SessionResponse>("/auth/session");
       localStorage.setItem(
         "isAuthenticated",
         data.data.currentCompany.name ? "true" : "false"
@@ -25,7 +25,7 @@ export const useAuth = () => {
   const profileQuery = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
-      const { data } = await axios.get<Company>("/auth/profile");
+      const { data } = await api.get<Company>("/auth/profile");
       return data;
     },
     enabled: false,
@@ -37,7 +37,7 @@ export const useAuth = () => {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await axios.post("/auth/logout");
+      await api.post("/auth/logout");
       clearAuth();
       localStorage.removeItem("token");
       localStorage.removeItem("isAuthenticated");

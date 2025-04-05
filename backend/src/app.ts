@@ -8,7 +8,7 @@ import transporterRoutes from "./routes/transporters.routes";
 import invoiceRoutes from "./routes/invoice.routes";
 import PgSession from "connect-pg-simple";
 import session from "express-session";
-
+import cors from "cors";
 dotenv.config();
 const app = express();
 
@@ -34,6 +34,13 @@ app.use(
       secure: true,
       sameSite: "none",
     },
+  })
+);
+
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN,
+    credentials: true,
   })
 );
 
