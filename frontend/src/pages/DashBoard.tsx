@@ -2,6 +2,7 @@ import { useState } from "react";
 import NavigationBar from "../components/UI/NavigationBar";
 import Sidebar from "../components/UI/Sidebar";
 import { IoMenu } from "react-icons/io5";
+import CompanyHeader from "../components/UI/CompanyHeader";
 const DashBoard = () => {
   const [showSideBar, setShowSideBar] = useState(false);
   return (
@@ -21,6 +22,9 @@ const DashBoard = () => {
           close={() => setShowSideBar(!showSideBar)}
         />
       </div>
+      <section className="w-full lg:w-4/5 overflow-y-auto h-full">
+        <CompanyHeader />
+      </section>
     </div>
   );
 };
