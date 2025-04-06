@@ -22,6 +22,15 @@ export const useAuth = () => {
     staleTime: Infinity,
   });
 
+  const getAllSessionsQuery = useQuery({
+    queryKey: ["sessions"],
+    queryFn: async () => {
+      const { data } = await api.get("/auth/allSessions");
+      return data.data;
+    },
+    enabled: false,
+  });
+
   const profileQuery = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
@@ -49,6 +58,7 @@ export const useAuth = () => {
     profileQuery,
     initiateGoogleLogin,
     logoutMutation,
+    getAllSessionsQuery,
     isAuthenticated: !!sessionQuery.data?.currentCompany,
     company: sessionQuery.data?.currentCompany,
     currentSession: sessionQuery.data?.currentSession,

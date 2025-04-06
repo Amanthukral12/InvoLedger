@@ -14,6 +14,7 @@ import PrivateRoute from "./components/PrivateRoute.tsx";
 import DashBoard from "./pages/DashBoard.tsx";
 import Login from "./pages/Login.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Profile from "./pages/Profile.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -24,6 +25,7 @@ const router = createBrowserRouter(
       <Route element={<AuthProvider />}>
         <Route element={<PrivateRoute />}>
           <Route path="/" index={true} element={<DashBoard />} />
+          <Route path="/profile" element={<Profile />} />
         </Route>
       </Route>
     </Route>

@@ -2,7 +2,6 @@ import useAuthStore from "../../store/authStore";
 import Person from "../../assets/Person-svg.svg?react";
 const CompanyHeader = () => {
   const { company } = useAuthStore();
-  console.log(company);
   return (
     <div className="bg-white m-3 py-4 px-2 rounded-lg shadow-xl flex flex-col lg:flex-row">
       <div className="flex justify-center  pl-4 mr-2 w-full lg:w-1/5">
