@@ -16,6 +16,7 @@ import Login from "./pages/Login.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Profile from "./pages/Profile.tsx";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import UpdateProfile from "./pages/UpdateProfile.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -27,6 +28,7 @@ const router = createBrowserRouter(
         <Route element={<PrivateRoute />}>
           <Route path="/" index={true} element={<DashBoard />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/update" element={<UpdateProfile />} />
         </Route>
       </Route>
     </Route>

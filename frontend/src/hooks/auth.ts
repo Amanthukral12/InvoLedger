@@ -53,12 +53,31 @@ export const useAuth = () => {
       await queryClient.clear();
     },
   });
+
+  const updateCompanyProfileMutation = useMutation<
+    void,
+    Error,
+    Partial<Company>
+  >({
+    mutationFn: async (formData) => {
+      const { data } = await api.put("/auth/profile", formData);
+      return data;
+    },
+    onSuccess: async (data) => {
+      console.log(data);
+      await queryClient.invalidateQueries({ queryKey: ["session"] });
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
   return {
     sessionQuery,
     profileQuery,
     initiateGoogleLogin,
     logoutMutation,
     getAllSessionsQuery,
+    updateCompanyProfileMutation,
     isAuthenticated: !!sessionQuery.data?.currentCompany,
     company: sessionQuery.data?.currentCompany,
     currentSession: sessionQuery.data?.currentSession,

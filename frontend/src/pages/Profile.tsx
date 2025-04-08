@@ -13,18 +13,25 @@ import { IoMenu } from "react-icons/io5";
 import { parseUserAgent } from "../utils/deviceInfo";
 const Profile = () => {
   const { getAllSessionsQuery } = useAuth();
-  const { currentSession } = useAuthStore();
-  const { data: sessions, isLoading, error, refetch } = getAllSessionsQuery;
+  const currentSession = useAuthStore((state) => state.currentSession);
   const [showSideBar, setShowSideBar] = useState(false);
-  useEffect(() => {
-    (async () => {
-      const result = await refetch();
-      return result;
-    })();
-  }, [refetch]);
+  const setAllSessions = useAuthStore((state) => state.setAllSessions);
+  const sessions = useAuthStore((state) => state.allSessions);
 
-  if (isLoading) return <p>Loading sessions...</p>;
-  if (error) return <p>Failed to load sessions</p>;
+  useEffect(() => {
+    const fetchSessions = async () => {
+      const res = await getAllSessionsQuery.refetch();
+      if (res.data) {
+        setAllSessions(res.data);
+      }
+    };
+
+    fetchSessions();
+  }, []);
+
+  if (getAllSessionsQuery.isFetching) {
+    return <div>Loading sessions...</div>;
+  }
 
   const getDeviceIcon = (deviceType: string) => {
     switch (deviceType.toLowerCase()) {
