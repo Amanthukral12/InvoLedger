@@ -50,7 +50,7 @@ export const useAuth = () => {
       clearAuth();
       localStorage.removeItem("token");
       localStorage.removeItem("isAuthenticated");
-      queryClient.clear();
+      await queryClient.clear();
     },
   });
   return {

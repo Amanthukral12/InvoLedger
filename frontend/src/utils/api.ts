@@ -1,4 +1,5 @@
 import axios from "axios";
+import { isTokenExpired } from "./token";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL,
@@ -7,7 +8,18 @@ const api = axios.create({
 
 api.interceptors.request.use(
   async (config) => {
-    const token = localStorage.getItem("token");
+    let token = localStorage.getItem("token");
+    if (token && isTokenExpired(token)) {
+      try {
+        const response = await refreshToken();
+        const { accessToken } = response.data;
+        localStorage.setItem("token", accessToken);
+        token = accessToken;
+      } catch (error) {
+        console.error("Token refresh failed in request interceptor", error);
+        localStorage.clear();
+      }
+    }
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
@@ -23,6 +35,7 @@ api.interceptors.response.use(
     return response;
   },
   async (error) => {
+    console.log(error);
     const originalRequest = error.config;
     if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;

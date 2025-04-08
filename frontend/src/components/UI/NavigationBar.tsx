@@ -6,6 +6,7 @@ import { FaHome } from "react-icons/fa";
 import { IoIosPeople } from "react-icons/io";
 import { IoMdPerson } from "react-icons/io";
 import { useState } from "react";
+import ProfilePopup from "./ProfilePopup";
 const NavigationBar = () => {
   const { company } = useAuthStore();
   const [showPopup, setShowPopup] = useState(false);
@@ -72,6 +73,10 @@ const NavigationBar = () => {
         <h2 className="text-xl text-main font-bold cursor-pointer">
           {company?.name}
         </h2>
+        <ProfilePopup
+          shown={showPopup}
+          close={() => setShowPopup(!showPopup)}
+        />
       </div>
     </div>
   );

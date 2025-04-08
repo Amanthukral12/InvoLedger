@@ -15,9 +15,10 @@ const AuthProvider = () => {
     }
   }, [sessionQuery.data, sessionQuery.isLoading]);
 
-  if (sessionQuery.isLoading) {
-    return <div>Loading...</div>;
+  if (sessionQuery.isFetching) {
+    return <div>Loading ...</div>;
   }
+
   return <Outlet />;
 };
 

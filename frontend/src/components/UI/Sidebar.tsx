@@ -4,6 +4,7 @@ import { FaHome } from "react-icons/fa";
 import { IoIosPeople, IoMdPerson } from "react-icons/io";
 import Logo from "../../assets/involedger.svg?react";
 import useAuthStore from "../../store/authStore";
+import ProfilePopup from "./ProfilePopup";
 const Sidebar = ({ shown, close }: { shown: boolean; close: () => void }) => {
   const { company } = useAuthStore();
   const [showPopup, setShowPopup] = useState(false);
@@ -79,6 +80,10 @@ const Sidebar = ({ shown, close }: { shown: boolean; close: () => void }) => {
           <h2 className="text-md text-main font-bold cursor-pointer">
             {company?.name}
           </h2>
+          <ProfilePopup
+            shown={showPopup}
+            close={() => setShowPopup(!showPopup)}
+          />
         </div>
       </div>
     </div>
