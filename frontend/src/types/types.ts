@@ -46,3 +46,14 @@ export interface SessionResponse {
     currentSession: CustomSession;
   };
 }
+
+export interface Client {
+  id: string;
+  name: string;
+  address: string;
+  GSTIN: string;
+  email: string | null;
+  phonenumber: string | null;
+  companyId: number;
+  state: string;
+}
