@@ -19,6 +19,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import UpdateProfile from "./pages/UpdateProfile.tsx";
 import Clients from "./pages/Clients.tsx";
 import AddClient from "./pages/AddClient.tsx";
+import UpdateClient from "./pages/UpdateClient.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -33,6 +34,7 @@ const router = createBrowserRouter(
           <Route path="/profile/update" element={<UpdateProfile />} />
           <Route path="/companyClients" element={<Clients />} />
           <Route path="/companyClients/add" element={<AddClient />} />
+          <Route path="/companyClients/update/:id" element={<UpdateClient />} />
         </Route>
       </Route>
     </Route>

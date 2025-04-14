@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useClient } from "../hooks/client";
 import CompanyHeader from "../components/UI/CompanyHeader";
 import NavigationBar from "../components/UI/NavigationBar";
@@ -7,22 +7,27 @@ import Sidebar from "../components/UI/Sidebar";
 import { Client } from "../types/types";
 import { MdDelete } from "react-icons/md";
 import { FaRegEdit } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import useClientStore from "../store/clientstore";
+import axios from "axios";
 
 const Clients = () => {
-  const { clientQuery } = useClient();
-  const [clients, setClients] = useState([]);
+  const { clientQuery, deleteClientMutation } = useClient();
+  const setSelectedClient = useClientStore((state) => state.setSelectedClient);
   const [showSideBar, setShowSideBar] = useState(false);
-
-  useEffect(() => {
-    const fetchClients = async () => {
-      const res = await clientQuery.refetch();
-      if (res.data) {
-        setClients(res.data);
+  const navigate = useNavigate();
+  const clients = clientQuery.data ?? [];
+  const deleteHandler = async (id: string) => {
+    try {
+      await deleteClientMutation.mutateAsync(id);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      } else {
+        console.error("Unexpected error:", error);
       }
-    };
-    fetchClients();
-  }, []);
+    }
+  };
 
   return (
     <div className="bg-[#edf7fd] bg-cover min-h-screen lg:h-screen overflow-hidden flex flex-col lg:flex-row w-full text-main">
@@ -42,7 +47,7 @@ const Clients = () => {
         <CompanyHeader />
         <div className="mx-3">
           <div className="flex justify-between mb-4 mx-0 lg:mx-2">
-            <h3 className="text-lg font-semibold mb-4">Clients</h3>
+            <h3 className="text-2xl font-semibold mb-4">Clients</h3>
             <Link to={"/companyClients/add"}>
               <button className="text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer">
                 Add New Client
@@ -72,12 +77,15 @@ const Clients = () => {
                         className="text-2xl mx-2"
                         onClick={(e) => {
                           e.preventDefault();
+                          setSelectedClient(client);
+                          navigate(`/companyClients/update/${client.id}`);
                         }}
                       />
                       <MdDelete
                         className="text-2xl mx-2"
                         onClick={(e) => {
                           e.preventDefault();
+                          deleteHandler(client.id);
                         }}
                       />
                     </div>

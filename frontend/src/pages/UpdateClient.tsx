@@ -1,27 +1,60 @@
-import { useState } from "react";
-import Sidebar from "../components/UI/Sidebar";
-import NavigationBar from "../components/UI/NavigationBar";
-import { IoMenu } from "react-icons/io5";
-import { CiUser } from "react-icons/ci";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import useClientStore from "../store/clientstore";
+import api from "../utils/api";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useClient } from "../hooks/client";
 import { STATES } from "../constants/state";
 import { TbBuildingEstate } from "react-icons/tb";
-import { IoMdPhonePortrait } from "react-icons/io";
+import { IoMdArrowBack, IoMdPhonePortrait } from "react-icons/io";
 import { TfiEmail } from "react-icons/tfi";
-import { useClient } from "../hooks/client";
-import { useNavigate } from "react-router-dom";
+import { CiUser } from "react-icons/ci";
+import Sidebar from "../components/UI/Sidebar";
+import { IoMenu } from "react-icons/io5";
+import NavigationBar from "../components/UI/NavigationBar";
 import axios from "axios";
-const AddClient = () => {
-  const [showSideBar, setShowSideBar] = useState(false);
+
+const UpdateClient = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const { createClientMutation } = useClient();
+  const [showSideBar, setShowSideBar] = useState(false);
+  const selectedClient = useClientStore((state) => state.selectedClient);
+  const setSelectedClient = useClientStore((state) => state.setSelectedClient);
+  const { updateClientMutation } = useClient();
   const [formData, setFormData] = useState({
     name: "",
-    address: "",
     GSTIN: "",
+    address: "",
     email: "",
     phonenumber: "",
     state: "",
   });
+
+  const { data: fetchedClient, isLoading } = useQuery({
+    queryKey: ["client", id],
+    queryFn: async () => {
+      const { data } = await api.get(`/client/${id}`);
+      setSelectedClient(data.data);
+      return data.data;
+    },
+    enabled: !selectedClient,
+  });
+
+  const client = selectedClient || fetchedClient;
+
+  useEffect(() => {
+    if (client) {
+      setFormData({
+        name: client.name || "",
+        GSTIN: client.GSTIN || "",
+        address: client.address || "",
+        email: client.email || "",
+        phonenumber: client.phonenumber || "",
+        state: client.state || "",
+      });
+    }
+  }, [client]);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -35,7 +68,7 @@ const AddClient = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-      await createClientMutation.mutateAsync(formData);
+      await updateClientMutation.mutateAsync({ id, updates: formData });
       navigate("/companyClients");
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -45,6 +78,9 @@ const AddClient = () => {
       }
     }
   };
+
+  if (isLoading) return <p>Loading...</p>;
+
   return (
     <div className="bg-[#edf7fd] bg-cover min-h-screen lg:h-screen overflow-hidden flex flex-col lg:flex-row w-full text-main">
       <div className=" w-0 lg:w-1/5 z-5">
@@ -61,6 +97,10 @@ const AddClient = () => {
       <Sidebar shown={showSideBar} close={() => setShowSideBar(!showSideBar)} />
       <section className="w-full lg:w-4/5 overflow-y-auto h-full mb-16 flex justify-center items-center">
         <div className="w-[90%] lg:w-1/2 bg-white shadow-md rounded-lg py-6 flex flex-col items-center">
+          <Link to={"/companyClients"} className="w-[90%] flex items-center">
+            <IoMdArrowBack className="w-8 h-8 mr-2" />
+            <h3 className="">Go Back</h3>
+          </Link>
           <h1 className="font-bold text-3xl m-3  text-main">Add New Client</h1>
           <form className="w-full" onSubmit={handleSubmit}>
             <div className="w-4/5 mx-auto relative mb-4">
@@ -143,7 +183,7 @@ const AddClient = () => {
               </select>
             </div>
             <button className="w-4/5 mx-auto text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer block">
-              Add New Client
+              Update Client
             </button>
           </form>
         </div>
@@ -152,4 +192,4 @@ const AddClient = () => {
   );
 };
 
-export default AddClient;
+export default UpdateClient;

@@ -11,7 +11,6 @@ export const useClient = () => {
       const { data } = await api.get("/client/");
       return data.data;
     },
-    enabled: false,
   });
 
   const useSingleClientQuery = (id: string) => {
@@ -61,7 +60,7 @@ export const useClient = () => {
   const updateClientMutation = useMutation<
     Client,
     Error,
-    { id: string; updates: Partial<Client> },
+    { id: string | undefined; updates: Partial<Client> },
     { previousClients?: Client[] }
   >({
     mutationFn: async ({ id, updates }) => {
