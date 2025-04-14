@@ -21,6 +21,8 @@ import Clients from "./pages/Clients.tsx";
 import AddClient from "./pages/AddClient.tsx";
 import UpdateClient from "./pages/UpdateClient.tsx";
 import Transporters from "./pages/Transporters.tsx";
+import AddTransporter from "./pages/AddTransporter.tsx";
+import UpdateTransporter from "./pages/UpdateTransporter.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -37,6 +39,11 @@ const router = createBrowserRouter(
           <Route path="/companyClients/add" element={<AddClient />} />
           <Route path="/companyClients/update/:id" element={<UpdateClient />} />
           <Route path="/companyTransporters" element={<Transporters />} />
+          <Route path="/companyTransporters/add" element={<AddTransporter />} />
+          <Route
+            path="/companyTransporters/update/:id"
+            element={<UpdateTransporter />}
+          />
         </Route>
       </Route>
     </Route>

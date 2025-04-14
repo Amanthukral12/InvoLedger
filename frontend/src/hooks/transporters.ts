@@ -20,7 +20,7 @@ export const useTransporter = () => {
     { previousTransporters?: Transporter[] }
   >({
     mutationFn: async (formData) => {
-      const { data } = await api.post("/transporter/add", formData);
+      const { data } = await api.post("/transporters/add", formData);
       return data;
     },
     onMutate: async (newTransporter) => {
