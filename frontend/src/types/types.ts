@@ -57,3 +57,12 @@ export interface Client {
   companyId: number;
   state: string;
 }
+
+export interface Transporter {
+  id: string;
+  name: string;
+  address: string;
+  GSTIN: string;
+  companyId: number;
+  state: string;
+}
