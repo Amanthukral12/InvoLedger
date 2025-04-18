@@ -273,28 +273,66 @@ export const getAllInvoicesForCompany = asyncHandler(
       ]);
     }
     const companyId = req.company.id;
-    const { page = 1, limit = 10 } = req.query;
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+    const {
+      page = 1,
+      limit = 10,
+      month = currentMonth,
+      year = currentYear,
+    } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
 
-    const invoices = await prisma.invoice.findMany({
-      where: {
-        companyId,
-      },
-      select: {
-        invoiceNumber: true,
-        invoiceDate: true,
-        id: true,
-        client: {
-          select: {
-            name: true,
+    let dateFilter = {};
+
+    if (month && year) {
+      const startDate = new Date(Number(year), Number(month) - 1, 1);
+      const endDate = new Date(Number(year), Number(month), 1);
+      dateFilter = {
+        invoiceDate: {
+          gte: startDate,
+          lt: endDate,
+        },
+      };
+    }
+
+    const where = {
+      companyId,
+      ...dateFilter,
+    };
+
+    const [totalCount, invoices] = await Promise.all([
+      prisma.invoice.count({ where }),
+      prisma.invoice.findMany({
+        where,
+        select: {
+          invoiceNumber: true,
+          invoiceDate: true,
+          id: true,
+          client: {
+            select: {
+              name: true,
+            },
           },
         },
-      },
-      skip: Number(offset),
-      take: Number(limit),
-    });
-    return res
-      .status(200)
-      .json(new ApiResponse(200, invoices, "Invoices fetched successfully"));
+        skip: Number(offset),
+        take: Number(limit),
+        orderBy: {
+          invoiceDate: "desc",
+        },
+      }),
+    ]);
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          invoices,
+          totalCount,
+          currentPage: Number(page),
+          pageSize: Number(limit),
+        },
+        "Invoices fetched successfully"
+      )
+    );
   }
 );

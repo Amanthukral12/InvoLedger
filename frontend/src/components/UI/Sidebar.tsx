@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { FaHome } from "react-icons/fa";
+import { FaFileInvoice, FaHome } from "react-icons/fa";
 import { IoIosPeople, IoMdPerson } from "react-icons/io";
 import Logo from "../../assets/involedger.svg?react";
 import useAuthStore from "../../store/authStore";
@@ -34,6 +34,17 @@ const Sidebar = ({ shown, close }: { shown: boolean; close: () => void }) => {
         >
           <FaHome className="h-8 w-8 mr-2.5" />
           Home
+        </NavLink>
+        <NavLink
+          className={({ isActive }) =>
+            `p-2.5 w-[90%] text-lg  font-bold flex items-center mb-1 ${
+              isActive ? "bg-main !text-white rounded-2xl !shadow-2xl" : ""
+            }`
+          }
+          to="/companyInvoices"
+        >
+          <FaFileInvoice className="h-8 w-8 mr-2.5" />
+          Invoices
         </NavLink>
         <NavLink
           className={({ isActive }) =>

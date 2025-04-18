@@ -66,3 +66,47 @@ export interface Transporter {
   companyId: number;
   state: string;
 }
+
+export interface InvoiceItem {
+  id: string;
+  invoiceId: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  hsnCode: string;
+  amount: number;
+}
+
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  invoiceDate: Date;
+  companyId: number;
+  clientId: string;
+  shipToPartyId: string | null;
+  amount: number;
+  cartage: number | null;
+  subTotal: number;
+  sgst: number | null;
+  cgst: number | null;
+  igst: number | null;
+  totalAmount: number;
+  totalAmountInWords: string;
+  reverseCharge: boolean;
+  transportMode: string;
+  vehicleNumber: string;
+  placeOfSupply: string;
+  company: Company;
+  client: Client;
+  shipToParty: Transporter | null;
+  invoiceItems: InvoiceItem[];
+}
+
+export interface CustomInvoiceData {
+  id: string;
+  invoiceDate: string;
+  invoiceNumber: 1;
+  client: {
+    name: string;
+  };
+}
