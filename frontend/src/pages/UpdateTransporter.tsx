@@ -24,7 +24,6 @@ const UpdateTransporter = () => {
   const selectedTransporter = useTransporterStore(
     (state) => state.selectedTransporter
   );
-  console.log(selectedTransporter);
   const [formData, setFormData] = useState({
     name: "",
     GSTIN: "",
