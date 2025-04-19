@@ -4,20 +4,34 @@ import NavigationBar from "../components/UI/NavigationBar";
 import Sidebar from "../components/UI/Sidebar";
 import { useInvoice } from "../hooks/invoices";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import useInvoiceStore from "../store/invoiceStore";
 import { CustomInvoiceData } from "../types/types";
 import { format } from "date-fns";
 import { FaRegEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { monthNames } from "../constants/months";
+import axios from "axios";
 const Invoices = () => {
   const [showSideBar, setShowSideBar] = useState(false);
   const { selectedYear, selectedMonth, setMonth, setYear } = useInvoiceStore();
-  const { invoiceQuery } = useInvoice();
+  const { invoiceQuery, deleteInvoiceMutation } = useInvoice();
   const data = invoiceQuery.data;
   const invoices = data?.invoices ?? [];
   const totalCount = data?.totalCount ?? 0;
+  const navigate = useNavigate();
+
+  const deleteHandler = async (id: string) => {
+    try {
+      await deleteInvoiceMutation.mutateAsync(id);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      } else {
+        console.error("Unexpected error:", error);
+      }
+    }
+  };
 
   if (invoiceQuery.isLoading) {
     return <p>Loading invoices...</p>;
@@ -116,12 +130,14 @@ const Invoices = () => {
                       className="text-2xl mx-2"
                       onClick={(e) => {
                         e.preventDefault();
+                        navigate(`/companyInvoices/update/${invoice.id}`);
                       }}
                     />
                     <MdDelete
                       className="text-2xl mx-2"
                       onClick={(e) => {
                         e.preventDefault();
+                        deleteHandler(invoice.id);
                       }}
                     />
                   </div>
