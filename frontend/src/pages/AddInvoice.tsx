@@ -1,7 +1,7 @@
 import { IoMenu } from "react-icons/io5";
 import Sidebar from "../components/UI/Sidebar";
 import NavigationBar from "../components/UI/NavigationBar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CiUser } from "react-icons/ci";
 import { useClient } from "../hooks/client";
 import { useTransporter } from "../hooks/transporters";
@@ -10,8 +10,12 @@ import { TbBuildingEstate } from "react-icons/tb";
 import { STATES } from "../constants/state";
 import { MdDelete } from "react-icons/md";
 import { IoIosAddCircleOutline } from "react-icons/io";
+import useAuthStore from "../store/authStore";
+import { inWords } from "../utils/numToWords";
 const AddInvoice = () => {
   const [showSideBar, setShowSideBar] = useState(false);
+  const [clientState, setClientState] = useState("");
+  const { company } = useAuthStore();
   const { clientQuery } = useClient();
   const { transporterQuery } = useTransporter();
   const clients = clientQuery.data ?? [];
@@ -98,11 +102,62 @@ const AddInvoice = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+
+    if (name === "clientId") {
+      const selectedClient = clients.find(
+        (client: Client) => client.id === value
+      );
+      if (selectedClient) {
+        setClientState(selectedClient.state);
+      }
+    }
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
+
+  const isSameState = clientState ? company?.state === clientState : false;
+
+  useEffect(() => {
+    const itemsAmount = invoiceItems.reduce(
+      (sum, item) => sum + item.amount,
+      0
+    );
+    setFormData((prev) => ({
+      ...prev,
+      amount: itemsAmount,
+    }));
+  }, [invoiceItems]);
+
+  useEffect(() => {
+    const subTotal = Number(formData.amount) + Number(formData.cartage);
+    setFormData((prev) => ({
+      ...prev,
+      subTotal: subTotal,
+    }));
+  }, [formData.amount, formData.cartage]);
+
+  useEffect(() => {
+    const totalAmount =
+      Number(formData.subTotal) +
+      Number(formData.sgst) +
+      Number(formData.cgst) +
+      Number(formData.igst);
+    setFormData((prev) => ({
+      ...prev,
+      totalAmount: totalAmount,
+    }));
+  }, [formData.subTotal, formData.sgst, formData.cgst, formData.igst]);
+
+  useEffect(() => {
+    const amountInWords = inWords(Number(formData.totalAmount));
+    console.log(amountInWords);
+    setFormData((prev) => ({
+      ...prev,
+      totalAmountInWords: amountInWords?.toLocaleUpperCase() || "",
+    }));
+  }, [formData.totalAmount]);
 
   return (
     <div className="bg-[#edf7fd] bg-cover min-h-screen overflow-hidden lg:h-screen flex flex-col lg:flex-row w-full text-main">
@@ -119,7 +174,7 @@ const AddInvoice = () => {
       </div>
       <Sidebar shown={showSideBar} close={() => setShowSideBar(!showSideBar)} />
       <section className="w-full lg:w-4/5 overflow-y-auto min-h-screen mb-16 flex justify-center items-start">
-        <div className="w-[90%] bg-white shadow-md rounded-lg py-3 mb-4 flex flex-col items-center px-1 md:px-0">
+        <div className="w-[90%] bg-white shadow-md rounded-lg py-3 mb-4 mt-10 flex flex-col items-center px-1 md:px-0">
           <h1 className="font-bold text-3xl m-3  text-main">Add New Invoice</h1>
           <form className="w-full">
             <div className="w-full md:w-4/5 mx-auto flex">
@@ -284,8 +339,8 @@ const AddInvoice = () => {
                   id="amount"
                   name="amount"
                   placeholder="Amount"
+                  readOnly
                   value={formData.amount}
-                  onChange={handleChange}
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
               </div>
@@ -329,6 +384,7 @@ const AddInvoice = () => {
                   id="sgst"
                   name="sgst"
                   placeholder="SGST"
+                  disabled={!isSameState}
                   value={formData.sgst}
                   onChange={handleChange}
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
@@ -345,6 +401,7 @@ const AddInvoice = () => {
                   name="cgst"
                   placeholder="CGST"
                   value={formData.cgst}
+                  disabled={!isSameState}
                   onChange={handleChange}
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
@@ -359,6 +416,7 @@ const AddInvoice = () => {
                   id="igst"
                   name="igst"
                   placeholder="IGST"
+                  disabled={isSameState}
                   value={formData.igst}
                   onChange={handleChange}
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
@@ -378,7 +436,7 @@ const AddInvoice = () => {
                   name="totalAmount"
                   placeholder="Total Amount"
                   value={formData.totalAmount}
-                  onChange={handleChange}
+                  readOnly
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
               </div>
@@ -390,11 +448,11 @@ const AddInvoice = () => {
                   Total Amount
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   name="totalAmountInWords"
                   placeholder="Total Amount in Words"
                   value={formData.totalAmountInWords}
-                  onChange={handleChange}
+                  readOnly
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
               </div>
