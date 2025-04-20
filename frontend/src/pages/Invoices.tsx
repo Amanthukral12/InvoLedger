@@ -98,7 +98,7 @@ const Invoices = () => {
           {totalCount === 0 && (
             <p className="text-lg font-semibold">No Invoices found</p>
           )}
-          <div className="w-[90%] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+          <div className="w-[90%] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-8">
             {invoices.map((invoice: CustomInvoiceData) => (
               <div
                 key={invoice.id}

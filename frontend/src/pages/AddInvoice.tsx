@@ -1,7 +1,7 @@
 import { IoMenu } from "react-icons/io5";
 import Sidebar from "../components/UI/Sidebar";
 import NavigationBar from "../components/UI/NavigationBar";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { CiUser } from "react-icons/ci";
 import { useClient } from "../hooks/client";
 import { useTransporter } from "../hooks/transporters";
@@ -12,10 +12,16 @@ import { MdDelete } from "react-icons/md";
 import { IoIosAddCircleOutline } from "react-icons/io";
 import useAuthStore from "../store/authStore";
 import { inWords } from "../utils/numToWords";
+import { useInvoice } from "../hooks/invoices";
+import axios from "axios";
+import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
 const AddInvoice = () => {
   const [showSideBar, setShowSideBar] = useState(false);
   const [clientState, setClientState] = useState("");
+  const navigate = useNavigate();
   const { company } = useAuthStore();
+  const { createInvoiceMutation } = useInvoice();
   const { clientQuery } = useClient();
   const { transporterQuery } = useTransporter();
   const clients = clientQuery.data ?? [];
@@ -111,9 +117,10 @@ const AddInvoice = () => {
         setClientState(selectedClient.state);
       }
     }
+    const numericFields = ["cartage", "cgst", "sgst", "igst"];
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: numericFields.includes(name) ? Number(value) : value,
     }));
   };
 
@@ -152,12 +159,30 @@ const AddInvoice = () => {
 
   useEffect(() => {
     const amountInWords = inWords(Number(formData.totalAmount));
-    console.log(amountInWords);
     setFormData((prev) => ({
       ...prev,
       totalAmountInWords: amountInWords?.toLocaleUpperCase() || "",
     }));
   }, [formData.totalAmount]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    const finalInvoice = {
+      ...formData,
+      invoiceDate: new Date(formData.invoiceDate),
+      invoiceItems,
+    };
+    try {
+      e.preventDefault();
+      await createInvoiceMutation.mutateAsync(finalInvoice);
+      navigate("/companyInvoices");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      } else {
+        console.error("Unexpected error:", error);
+      }
+    }
+  };
 
   return (
     <div className="bg-[#edf7fd] bg-cover min-h-screen overflow-hidden lg:h-screen flex flex-col lg:flex-row w-full text-main">
@@ -176,7 +201,7 @@ const AddInvoice = () => {
       <section className="w-full lg:w-4/5 overflow-y-auto min-h-screen mb-16 flex justify-center items-start">
         <div className="w-[90%] bg-white shadow-md rounded-lg py-3 mb-4 mt-10 flex flex-col items-center px-1 md:px-0">
           <h1 className="font-bold text-3xl m-3  text-main">Add New Invoice</h1>
-          <form className="w-full">
+          <form className="w-full" onSubmit={handleSubmit}>
             <div className="w-full md:w-4/5 mx-auto flex">
               <div className="w-full md:w-4/5 mx-auto relative mb-4 mr-4">
                 <CiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -197,7 +222,7 @@ const AddInvoice = () => {
                   placeholder="Invoice Date"
                   name="invoiceDate"
                   required
-                  value={formData.invoiceDate.toISOString().split("T")[0]}
+                  value={format(new Date(formData.invoiceDate), "yyyy-MM-dd")}
                   onChange={handleChange}
                   className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base md:text-sm"
                 />
@@ -354,7 +379,7 @@ const AddInvoice = () => {
                   id="cartage"
                   name="cartage"
                   placeholder="Cartage"
-                  value={formData.cartage}
+                  value={Number(formData.cartage)}
                   onChange={handleChange}
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
