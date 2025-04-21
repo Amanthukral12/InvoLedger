@@ -1,27 +1,30 @@
-import { IoMenu } from "react-icons/io5";
-import Sidebar from "../components/UI/Sidebar";
-import NavigationBar from "../components/UI/NavigationBar";
+import { useQuery } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
-import { CiUser } from "react-icons/ci";
+import { useNavigate, useParams } from "react-router-dom";
+import api from "../utils/api";
+import { inWords } from "../utils/numToWords";
+import useAuthStore from "../store/authStore";
 import { useClient } from "../hooks/client";
 import { useTransporter } from "../hooks/transporters";
-import { Client, Transporter } from "../types/types";
+import NavigationBar from "../components/UI/NavigationBar";
+import { IoMenu } from "react-icons/io5";
+import Sidebar from "../components/UI/Sidebar";
+import { CiUser } from "react-icons/ci";
+import { format } from "date-fns";
+import { Client, Invoice, Transporter } from "../types/types";
 import { TbBuildingEstate } from "react-icons/tb";
 import { STATES } from "../constants/state";
 import { MdDelete } from "react-icons/md";
 import { IoIosAddCircleOutline } from "react-icons/io";
-import useAuthStore from "../store/authStore";
-import { inWords } from "../utils/numToWords";
-import { useInvoice } from "../hooks/invoices";
 import axios from "axios";
-import { format } from "date-fns";
-import { useNavigate } from "react-router-dom";
-const AddInvoice = () => {
+import { useInvoice } from "../hooks/invoices";
+
+const UpdateInvoice = () => {
+  const { id } = useParams();
   const [showSideBar, setShowSideBar] = useState(false);
   const [clientState, setClientState] = useState("");
   const navigate = useNavigate();
   const { company } = useAuthStore();
-  const { createInvoiceMutation } = useInvoice();
   const { clientQuery } = useClient();
   const { transporterQuery } = useTransporter();
   const clients = React.useMemo(
@@ -32,6 +35,16 @@ const AddInvoice = () => {
     () => transporterQuery.data ?? [],
     [transporterQuery.data]
   );
+  const { updateInvoiceMutation } = useInvoice();
+  const { data: fetchedInvoice, isLoading } = useQuery<Invoice>({
+    queryKey: ["invoice", id],
+    queryFn: async () => {
+      const { data } = await api.get(`/invoice/${id}`);
+      return data.data;
+    },
+    enabled: !!id,
+  });
+
   const [formData, setFormData] = useState({
     invoiceNumber: "",
     invoiceDate: new Date(),
@@ -54,7 +67,6 @@ const AddInvoice = () => {
     vehicleNumber: "",
     placeOfSupply: "",
   });
-
   const [invoiceItems, setInvoiceItems] = useState([
     {
       id: Date.now().toString(),
@@ -66,6 +78,46 @@ const AddInvoice = () => {
       amount: 0,
     },
   ]);
+
+  useEffect(() => {
+    if (fetchedInvoice) {
+      setFormData({
+        invoiceNumber: fetchedInvoice.invoiceNumber || "",
+        invoiceDate: fetchedInvoice.invoiceDate
+          ? new Date(fetchedInvoice.invoiceDate)
+          : new Date(),
+        clientId: fetchedInvoice.clientId || "",
+        shipToPartyId: fetchedInvoice.shipToPartyId || "",
+        amount: fetchedInvoice.amount || 0,
+        cartage: fetchedInvoice.cartage || 0,
+        subTotal: fetchedInvoice.subTotal || 0,
+        taxPercent: fetchedInvoice.taxPercent || 0,
+        sgstPercent: fetchedInvoice.sgstPercent || 0,
+        cgstPercent: fetchedInvoice.cgstPercent || 0,
+        igstPercent: fetchedInvoice.igstPercent || 0,
+        sgst: fetchedInvoice.sgst || 0,
+        cgst: fetchedInvoice.cgst || 0,
+        igst: fetchedInvoice.igst || 0,
+        totalAmount: fetchedInvoice.totalAmount || 0,
+        totalAmountInWords: fetchedInvoice.totalAmountInWords || "",
+        reverseCharge: fetchedInvoice.reverseCharge || false,
+        transportMode: fetchedInvoice.transportMode || "",
+        vehicleNumber: fetchedInvoice.vehicleNumber || "",
+        placeOfSupply: fetchedInvoice.placeOfSupply || "",
+      });
+      setInvoiceItems(fetchedInvoice.invoiceItems || []);
+    }
+  }, [fetchedInvoice]);
+
+  useEffect(() => {
+    const selectedClient = clients.find(
+      (client: Client) => client.id === formData.clientId
+    );
+    if (selectedClient) {
+      setClientState(selectedClient.state);
+    }
+  }, [formData.clientId, clients]);
+
   const handleItemChange = (
     index: number,
     e: React.ChangeEvent<HTMLInputElement>
@@ -119,14 +171,6 @@ const AddInvoice = () => {
   ) => {
     const { name, value } = e.target;
 
-    if (name === "clientId") {
-      const selectedClient = clients.find(
-        (client: Client) => client.id === value
-      );
-      if (selectedClient) {
-        setClientState(selectedClient.state);
-      }
-    }
     const numericFields = [
       "cartage",
       "cgst",
@@ -200,7 +244,6 @@ const AddInvoice = () => {
     formData.cgst,
     formData.igst,
   ]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     const finalInvoice = {
       ...formData,
@@ -209,7 +252,7 @@ const AddInvoice = () => {
     };
     try {
       e.preventDefault();
-      await createInvoiceMutation.mutateAsync(finalInvoice);
+      await updateInvoiceMutation.mutateAsync({ id, formData: finalInvoice });
       navigate("/companyInvoices");
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -219,7 +262,7 @@ const AddInvoice = () => {
       }
     }
   };
-
+  if (isLoading) return <p>Loading...</p>;
   return (
     <div className="bg-[#edf7fd] bg-cover min-h-screen overflow-hidden lg:h-screen flex flex-col lg:flex-row w-full text-main">
       <div className=" w-0 lg:w-1/5 z-5">
@@ -236,7 +279,7 @@ const AddInvoice = () => {
       <Sidebar shown={showSideBar} close={() => setShowSideBar(!showSideBar)} />
       <section className="w-full lg:w-4/5 overflow-y-auto min-h-screen mb-16 flex justify-center items-start">
         <div className="w-[90%] bg-white shadow-md rounded-lg py-3 mb-4 mt-10 flex flex-col items-center px-1 md:px-0">
-          <h1 className="font-bold text-3xl m-3  text-main">Add New Invoice</h1>
+          <h1 className="font-bold text-3xl m-3  text-main">Update Invoice</h1>
           <form className="w-full" onSubmit={handleSubmit}>
             <div className="w-full md:w-4/5 mx-auto flex">
               <div className="w-full md:w-4/5 mx-auto relative mb-4 mr-4">
@@ -627,7 +670,7 @@ const AddInvoice = () => {
               </div>
             </div>
             <button className="w-full md:w-4/5 mx-auto text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer block">
-              Add New Invoice
+              Update Invoice
             </button>
           </form>
         </div>
@@ -636,4 +679,4 @@ const AddInvoice = () => {
   );
 };
 
-export default AddInvoice;
+export default UpdateInvoice;

@@ -87,6 +87,10 @@ export interface Invoice {
   amount: number;
   cartage: number | null;
   subTotal: number;
+  taxPercent: number | null;
+  sgstPercent: number | null;
+  cgstPercent: number | null;
+  igstPercent: number | null;
   sgst: number | null;
   cgst: number | null;
   igst: number | null;
