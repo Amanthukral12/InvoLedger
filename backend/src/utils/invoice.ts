@@ -1,6 +1,4 @@
 import PDFDocument from "pdfkit";
-import fs from "fs";
-import path from "path";
 import { InvoiceDocument } from "../types/types";
 import { format } from "date-fns";
 
@@ -232,7 +230,7 @@ export const generateInvoicePdf = (
   if (invoiceData.cgst) {
     doc
       .font("Helvetica")
-      .text("CGST:", labelX, yPosition + 20)
+      .text(`CGST(${invoiceData.cgstPercent}%):`, labelX, yPosition + 20)
       .text(`${invoiceData.cgst}`, valueX, yPosition + 20, {
         align: "right",
       });
@@ -241,7 +239,7 @@ export const generateInvoicePdf = (
   if (invoiceData.sgst) {
     doc
       .font("Helvetica")
-      .text("SGST:", labelX, yPosition + 30)
+      .text(`SGST(${invoiceData.sgstPercent}%):`, labelX, yPosition + 30)
       .text(`${invoiceData.sgst}`, valueX, yPosition + 30, {
         align: "right",
       });
@@ -250,8 +248,8 @@ export const generateInvoicePdf = (
   if (invoiceData.igst) {
     doc
       .font("Helvetica")
-      .text("IGST:", labelX, yPosition + 40)
-      .text(`${invoiceData.igst}`, valueX, yPosition + 40, {
+      .text(`IGST(${invoiceData.igstPercent}%):`, labelX, yPosition + 20)
+      .text(`${invoiceData.igst}`, valueX, yPosition + 20, {
         align: "right",
       });
   }

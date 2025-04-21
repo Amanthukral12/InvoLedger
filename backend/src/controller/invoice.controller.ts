@@ -261,7 +261,7 @@ export const generateInvoice = asyncHandler(
     }
     const companyId = req.company.id;
     const invoiceId = req.params.id;
-    const copyName = req.body.copyName;
+    const copyName = req.body.invoiceType;
     const invoiceExists = await prisma.invoice.findUnique({
       where: {
         id: invoiceId,

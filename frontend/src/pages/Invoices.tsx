@@ -15,7 +15,9 @@ import axios from "axios";
 const Invoices = () => {
   const [showSideBar, setShowSideBar] = useState(false);
   const { selectedYear, selectedMonth, setMonth, setYear } = useInvoiceStore();
-  const { invoiceQuery, deleteInvoiceMutation } = useInvoice();
+  const { invoiceQuery, deleteInvoiceMutation, generateInvoiceMutation } =
+    useInvoice();
+  const [invoiceType, setInvoiceType] = useState("ORIGINAL");
   const data = invoiceQuery.data;
   const invoices = data?.invoices ?? [];
   const totalCount = data?.totalCount ?? 0;
@@ -33,6 +35,25 @@ const Invoices = () => {
     }
   };
 
+  const handleDownload = async ({
+    id,
+    invoiceNumber,
+    clientName,
+    invoiceType,
+  }: {
+    id: string;
+    invoiceNumber: number;
+    clientName: string;
+    invoiceType: string;
+  }) => {
+    await generateInvoiceMutation.mutateAsync({
+      id,
+      invoiceNumber,
+      clientName,
+      invoiceType,
+    });
+  };
+
   if (invoiceQuery.isLoading) {
     return <p>Loading invoices...</p>;
   }
@@ -40,6 +61,7 @@ const Invoices = () => {
   if (invoiceQuery.isError) {
     return <p>Error loading invoices: {invoiceQuery.error.message}</p>;
   }
+
   return (
     <div className="bg-[#edf7fd] bg-cover min-h-screen lg:h-screen overflow-hidden flex flex-col lg:flex-row w-full text-main">
       <div className=" w-0 lg:w-1/5 z-5">
@@ -114,14 +136,24 @@ const Invoices = () => {
                     </p>
                     <div>
                       <label>Invoice Type: </label>
-                      <select className="">
+                      <select onChange={(e) => setInvoiceType(e.target.value)}>
                         <option value="ORIGINAL">ORIGINAL</option>
                         <option value="DUPLICATE">DUPLICATE</option>
                         <option value="OFFICE COPY">OFFICE COPY</option>
                       </select>
                     </div>
 
-                    <button className="text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer block my-2 mx-auto">
+                    <button
+                      className="text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer block my-2 mx-auto"
+                      onClick={() => {
+                        handleDownload({
+                          id: invoice.id,
+                          invoiceNumber: invoice.invoiceNumber,
+                          clientName: invoice.client.name,
+                          invoiceType,
+                        });
+                      }}
+                    >
                       Download Invoice
                     </button>
                   </div>

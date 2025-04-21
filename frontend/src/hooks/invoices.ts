@@ -58,6 +58,50 @@ export const useInvoice = () => {
     },
   });
 
+  const generateInvoiceMutation = useMutation<
+    void,
+    Error,
+    {
+      id: string;
+      invoiceNumber: number;
+      clientName: string;
+      invoiceType: string;
+    }
+  >({
+    mutationFn: async ({ id, invoiceNumber, clientName, invoiceType }) => {
+      const response = await api.post(
+        `/invoice/generate-invoice/${id}/`,
+        { invoiceType },
+        {
+          responseType: "blob",
+          withCredentials: true,
+        }
+      );
+
+      const disposition = response.headers["content-disposition"];
+      let filename = `${clientName}_${invoiceType}_${invoiceNumber}.pdf`;
+
+      if (disposition && disposition.includes("filename=")) {
+        const match = disposition.match(/filename="?([^"]+)"?/);
+        if (match?.[1]) {
+          filename = match[1];
+        }
+      }
+
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    },
+  });
+
   const updateInvoiceMutation = useMutation<
     Invoice,
     Error,
@@ -118,10 +162,12 @@ export const useInvoice = () => {
       queryClient.invalidateQueries({ queryKey: ["invoice"] });
     },
   });
+
   return {
     invoiceQuery,
     createInvoiceMutation,
     updateInvoiceMutation,
     deleteInvoiceMutation,
+    generateInvoiceMutation,
   };
 };
