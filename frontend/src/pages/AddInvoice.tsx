@@ -34,6 +34,10 @@ const AddInvoice = () => {
     amount: 0,
     cartage: 0,
     subTotal: 0,
+    taxPercent: 0,
+    sgstPercent: 0,
+    cgstPercent: 0,
+    igstPercent: 0,
     sgst: 0,
     cgst: 0,
     igst: 0,
@@ -117,53 +121,79 @@ const AddInvoice = () => {
         setClientState(selectedClient.state);
       }
     }
-    const numericFields = ["cartage", "cgst", "sgst", "igst"];
+    const numericFields = [
+      "cartage",
+      "cgst",
+      "sgst",
+      "igst",
+      "taxPercent",
+      "cgstPercent",
+      "sgstPercent",
+      "igstPercent",
+    ];
     setFormData((prev) => ({
       ...prev,
       [name]: numericFields.includes(name) ? Number(value) : value,
     }));
   };
 
-  const isSameState = clientState ? company?.state === clientState : false;
+  useEffect(() => {
+    const isSameState = clientState ? company?.state === clientState : false;
+    if (isSameState) {
+      const halfTax = formData.taxPercent / 2;
+      const cgst = (halfTax * formData.subTotal) / 100;
+      const sgst = (halfTax * formData.subTotal) / 100;
+
+      setFormData((prev) => ({
+        ...prev,
+        cgstPercent: halfTax,
+        sgstPercent: halfTax,
+        igstPercent: 0,
+        cgst,
+        sgst,
+        igst: 0,
+      }));
+    } else {
+      const igst = (formData.taxPercent * formData.subTotal) / 100;
+      setFormData((prev) => ({
+        ...prev,
+        cgstPercent: 0,
+        sgstPercent: 0,
+        igstPercent: formData.taxPercent,
+        cgst: 0,
+        sgst: 0,
+        igst,
+      }));
+    }
+  }, [formData.taxPercent, formData.subTotal, clientState, company?.state]);
 
   useEffect(() => {
     const itemsAmount = invoiceItems.reduce(
       (sum, item) => sum + item.amount,
       0
     );
-    setFormData((prev) => ({
-      ...prev,
-      amount: itemsAmount,
-    }));
-  }, [invoiceItems]);
-
-  useEffect(() => {
-    const subTotal = Number(formData.amount) + Number(formData.cartage);
-    setFormData((prev) => ({
-      ...prev,
-      subTotal: subTotal,
-    }));
-  }, [formData.amount, formData.cartage]);
-
-  useEffect(() => {
+    const subTotal = itemsAmount + Number(formData.cartage);
     const totalAmount =
-      Number(formData.subTotal) +
+      subTotal +
       Number(formData.sgst) +
       Number(formData.cgst) +
       Number(formData.igst);
-    setFormData((prev) => ({
-      ...prev,
-      totalAmount: totalAmount,
-    }));
-  }, [formData.subTotal, formData.sgst, formData.cgst, formData.igst]);
+    const amountInWords = inWords(totalAmount)?.toLocaleUpperCase() || "";
 
-  useEffect(() => {
-    const amountInWords = inWords(Number(formData.totalAmount));
     setFormData((prev) => ({
       ...prev,
-      totalAmountInWords: amountInWords?.toLocaleUpperCase() || "",
+      amount: itemsAmount,
+      subTotal,
+      totalAmount,
+      totalAmountInWords: amountInWords,
     }));
-  }, [formData.totalAmount]);
+  }, [
+    invoiceItems,
+    formData.cartage,
+    formData.sgst,
+    formData.cgst,
+    formData.igst,
+  ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     const finalInvoice = {
@@ -399,6 +429,74 @@ const AddInvoice = () => {
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
               </div>
+              <div className="flex flex-col">
+                <label
+                  htmlFor="taxPercent"
+                  className="mb-1 text-sm font-medium "
+                >
+                  Tax Percent
+                </label>
+                <input
+                  type="number"
+                  id="taxPercent"
+                  name="taxPercent"
+                  placeholder="Tax Percent"
+                  value={formData.taxPercent}
+                  onChange={handleChange}
+                  className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
+                />
+              </div>
+              <div className="flex flex-col">
+                <label
+                  htmlFor="sgstPercent"
+                  className="mb-1 text-sm font-medium "
+                >
+                  SGST Percent
+                </label>
+                <input
+                  type="number"
+                  id="sgstPercent"
+                  name="sgstPercent"
+                  placeholder="sgst Percent"
+                  readOnly
+                  value={formData.sgstPercent}
+                  className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
+                />
+              </div>
+              <div className="flex flex-col">
+                <label
+                  htmlFor="cgstPercent"
+                  className="mb-1 text-sm font-medium "
+                >
+                  CGST Percent
+                </label>
+                <input
+                  type="number"
+                  id="cgstPercent"
+                  name="cgstPercent"
+                  placeholder="cgst Percent"
+                  readOnly
+                  value={formData.cgstPercent}
+                  className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
+                />
+              </div>
+              <div className="flex flex-col">
+                <label
+                  htmlFor="igstPercent"
+                  className="mb-1 text-sm font-medium "
+                >
+                  IGST Percent
+                </label>
+                <input
+                  type="number"
+                  id="igstPercent"
+                  name="igstPercent"
+                  placeholder="igst Percent"
+                  readOnly
+                  value={formData.igstPercent}
+                  className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
+                />
+              </div>
 
               <div className="flex flex-col">
                 <label htmlFor="sgst" className="mb-1 text-sm font-medium ">
@@ -409,9 +507,8 @@ const AddInvoice = () => {
                   id="sgst"
                   name="sgst"
                   placeholder="SGST"
-                  disabled={!isSameState}
+                  readOnly
                   value={formData.sgst}
-                  onChange={handleChange}
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
               </div>
@@ -425,9 +522,8 @@ const AddInvoice = () => {
                   id="cgst"
                   name="cgst"
                   placeholder="CGST"
+                  readOnly
                   value={formData.cgst}
-                  disabled={!isSameState}
-                  onChange={handleChange}
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
               </div>
@@ -441,9 +537,8 @@ const AddInvoice = () => {
                   id="igst"
                   name="igst"
                   placeholder="IGST"
-                  disabled={isSameState}
+                  readOnly
                   value={formData.igst}
-                  onChange={handleChange}
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
               </div>
