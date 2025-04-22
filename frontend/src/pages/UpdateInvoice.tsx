@@ -352,7 +352,77 @@ const UpdateInvoice = () => {
             <div className="w-full md:w-4/5 mx-auto relative mb-4">
               <h3 className="text-2xl font-medium mb-2">Invoice Items</h3>
 
-              <table className="w-full border border-gray-300 text-sm">
+              <div className="flex flex-col gap-4 md:hidden">
+                {invoiceItems.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className="border rounded-lg p-4 shadow-sm bg-white"
+                  >
+                    <div className="mb-2">
+                      <label className="font-semibold text-sm">
+                        Description
+                      </label>
+                      <input
+                        type="text"
+                        name="description"
+                        value={item.description}
+                        onChange={(e) => handleItemChange(index, e)}
+                        className="w-full p-1 border border-gray-300 mt-1"
+                      />
+                    </div>
+                    <div className="mb-2">
+                      <label className="font-semibold text-sm">HSN Code</label>
+                      <input
+                        type="text"
+                        name="hsnCode"
+                        value={item.hsnCode}
+                        onChange={(e) => handleItemChange(index, e)}
+                        className="w-full p-1 border border-gray-300 mt-1"
+                      />
+                    </div>
+                    <div className="mb-2">
+                      <label className="font-semibold text-sm">Quantity</label>
+                      <input
+                        type="number"
+                        name="quantity"
+                        value={item.quantity}
+                        onChange={(e) => handleItemChange(index, e)}
+                        className="w-full p-1 border border-gray-300 mt-1"
+                      />
+                    </div>
+                    <div className="mb-2">
+                      <label className="font-semibold text-sm">
+                        Unit Price
+                      </label>
+                      <input
+                        type="number"
+                        name="unitPrice"
+                        value={item.unitPrice}
+                        onChange={(e) => handleItemChange(index, e)}
+                        className="w-full p-1 border border-gray-300 mt-1"
+                      />
+                    </div>
+                    <div className="mb-2">
+                      <label className="font-semibold text-sm">Amount</label>
+                      <input
+                        type="number"
+                        name="amount"
+                        value={item.amount}
+                        readOnly
+                        className="w-full p-1 border bg-gray-100 cursor-not-allowed border-gray-300 mt-1"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(index)}
+                      className="ml-auto block"
+                    >
+                      <MdDelete className="text-5xl text-[#116456]" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <table className="w-full border border-gray-300 text-sm hidden md:block">
                 <thead className="bg-gray-100">
                   <tr>
                     <th className="border md:px-2 py-1">Description</th>
@@ -416,8 +486,12 @@ const UpdateInvoice = () => {
                         />
                       </td>
                       <td className=" px-2 py-1 text-center">
-                        <button type="button" onClick={() => removeItem(index)}>
-                          <MdDelete className="text-2xl" />
+                        <button
+                          type="button"
+                          onClick={() => removeItem(index)}
+                          className="ml-auto block"
+                        >
+                          <MdDelete className="text-4xl text-[#116456]" />
                         </button>
                       </td>
                     </tr>
@@ -427,7 +501,7 @@ const UpdateInvoice = () => {
               <button
                 type="button"
                 onClick={addItem}
-                className="text-main underline"
+                className="text-[#116456] text-5xl"
               >
                 <IoIosAddCircleOutline className="text-4xl mt-2" />
               </button>
@@ -593,7 +667,7 @@ const UpdateInvoice = () => {
               </div>
             </div>
             <div className="w-full md:w-4/5 mx-auto flex mb-4">
-              <div className="flex flex-col mr-4 w-1/4 md:w-1/5">
+              <div className="flex flex-col mr-4 w-1/3 md:w-1/5">
                 <label
                   htmlFor="totalAmount"
                   className="mb-1 text-sm font-medium "
@@ -609,12 +683,12 @@ const UpdateInvoice = () => {
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
               </div>
-              <div className="flex flex-col w-4/5">
+              <div className="flex flex-col w-2/3 md:w-4/5">
                 <label
                   htmlFor="totalAmountInWords"
                   className="mb-1 text-sm font-medium "
                 >
-                  Total Amount
+                  Total Amount in Words
                 </label>
                 <input
                   type="text"

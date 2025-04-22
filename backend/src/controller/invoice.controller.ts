@@ -38,6 +38,8 @@ export const createInvoice = asyncHandler(
       invoiceItems,
     } = req.body;
 
+    const cleanedShipToPartyId = shipToPartyId === "" ? null : shipToPartyId;
+
     const invoice = await prisma.$transaction(async (prisma) => {
       const newInvoice = await prisma.invoice.create({
         data: {
@@ -45,7 +47,7 @@ export const createInvoice = asyncHandler(
           invoiceDate,
           companyId,
           clientId,
-          shipToPartyId,
+          shipToPartyId: cleanedShipToPartyId,
           amount,
           cartage,
           subTotal,
