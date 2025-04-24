@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Company, SessionResponse } from "../types/types";
 import useAuthStore from "../store/authStore";
 import api from "../utils/api";
+import { toast } from "react-toastify";
 
 export const useAuth = () => {
   const queryClient = useQueryClient();
@@ -61,6 +62,7 @@ export const useAuth = () => {
   >({
     mutationFn: async (formData) => {
       const { data } = await api.put("/auth/profile", formData);
+      toast.success(data.message);
       return data;
     },
     onSuccess: async (data) => {

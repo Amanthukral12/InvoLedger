@@ -16,6 +16,7 @@ import { useInvoice } from "../hooks/invoices";
 import axios from "axios";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 const AddInvoice = () => {
   const [showSideBar, setShowSideBar] = useState(false);
   const [clientState, setClientState] = useState("");
@@ -214,6 +215,7 @@ const AddInvoice = () => {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
+        toast.error(error.response?.data.message);
       } else {
         console.error("Unexpected error:", error);
       }

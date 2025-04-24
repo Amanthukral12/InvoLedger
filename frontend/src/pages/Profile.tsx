@@ -66,7 +66,7 @@ const Profile = () => {
             Update Profile
           </button>
         </Link>
-        <div className="bg-white mx-3 rounded-lg shadow-xl p-4">
+        <div className="bg-white mx-3 rounded-lg shadow-xl p-4 mb-6">
           <h3 className="text-lg font-semibold mb-4">Sessions</h3>
           <div className="space-y-3">
             {sessions?.map((singleSession: CustomSession) => {

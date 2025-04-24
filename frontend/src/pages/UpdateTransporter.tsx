@@ -31,17 +31,17 @@ const UpdateTransporter = () => {
     address: "",
     state: "",
   });
-  const { data: fetchedClient, isLoading } = useQuery({
-    queryKey: ["client", id],
+  const { data: fetchedTransporter, isLoading } = useQuery({
+    queryKey: ["transporter", id],
     queryFn: async () => {
-      const { data } = await api.get(`/client/${id}`);
+      const { data } = await api.get(`/transporters/${id}`);
       setSelectedTransporter(data.data);
       return data.data;
     },
     enabled: !selectedTransporter,
   });
 
-  const transporter = selectedTransporter || fetchedClient;
+  const transporter = selectedTransporter || fetchedTransporter;
 
   useEffect(() => {
     if (transporter) {
@@ -109,7 +109,7 @@ const UpdateTransporter = () => {
               <CiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="Client Name"
+                placeholder="Transporter Name"
                 name="name"
                 required
                 value={formData.name}
@@ -121,7 +121,7 @@ const UpdateTransporter = () => {
               <TbBuildingEstate className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="Client Address"
+                placeholder="Transporter Address"
                 name="address"
                 required
                 value={formData.address}
@@ -133,7 +133,7 @@ const UpdateTransporter = () => {
               <CiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="Client GSTIN"
+                placeholder="Transporter GSTIN"
                 name="GSTIN"
                 required
                 value={formData.GSTIN}
@@ -163,7 +163,7 @@ const UpdateTransporter = () => {
               </select>
             </div>
             <button className="w-4/5 mx-auto text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer block">
-              Update Client
+              Update Transporter
             </button>
           </form>
         </div>

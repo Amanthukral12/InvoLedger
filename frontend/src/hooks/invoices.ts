@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "../utils/api";
 import useInvoiceStore from "../store/invoiceStore";
 import { Invoice } from "../types/types";
+import { toast } from "react-toastify";
 
 export const useInvoice = () => {
   const queryClient = useQueryClient();
@@ -32,6 +33,7 @@ export const useInvoice = () => {
   >({
     mutationFn: async (formData) => {
       const { data } = await api.post("/invoice/add", formData);
+      toast.success(data.message);
       return data;
     },
     onMutate: async (newInvoice) => {
@@ -109,7 +111,8 @@ export const useInvoice = () => {
     { previousInvoices?: Invoice[] }
   >({
     mutationFn: async ({ id, formData }) => {
-      const { data } = await api.put<Invoice>(`/invoice/${id}`, formData);
+      const { data } = await api.put(`/invoice/${id}`, formData);
+      toast.success(data.message);
       return data;
     },
     onMutate: async ({ id, formData }) => {
@@ -142,6 +145,7 @@ export const useInvoice = () => {
   >({
     mutationFn: async (id) => {
       await api.delete(`/invoice/${id}`);
+      toast.success("Invoice deleted successfully");
     },
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ["invoice"] });

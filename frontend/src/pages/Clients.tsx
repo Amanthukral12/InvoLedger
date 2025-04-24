@@ -54,7 +54,7 @@ const Clients = () => {
               </button>
             </Link>
           </div>
-          <div className="w-[90%] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+          <div className="w-[90%] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-6">
             {clients?.map((client: Client) => {
               return (
                 <div

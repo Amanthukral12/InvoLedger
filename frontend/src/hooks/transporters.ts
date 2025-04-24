@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "../utils/api";
 import { Transporter } from "../types/types";
+import { toast } from "react-toastify";
 
 export const useTransporter = () => {
   const queryClient = useQueryClient();
@@ -21,6 +22,7 @@ export const useTransporter = () => {
   >({
     mutationFn: async (formData) => {
       const { data } = await api.post("/transporters/add", formData);
+      toast.success(data.message);
       return data;
     },
     onMutate: async (newTransporter) => {
@@ -57,10 +59,8 @@ export const useTransporter = () => {
     { previousTransporters?: Transporter[] }
   >({
     mutationFn: async ({ id, formData }) => {
-      const { data } = await api.put<Transporter>(
-        `/transporters/${id}`,
-        formData
-      );
+      const { data } = await api.put(`/transporters/${id}`, formData);
+      toast.success(data.message);
       return data;
     },
     onMutate: async ({ id, formData }) => {
@@ -95,7 +95,8 @@ export const useTransporter = () => {
     { previousTransporters?: Transporter[] }
   >({
     mutationFn: async (id) => {
-      await api.delete(`/transporters/${id}`);
+      const { data } = await api.delete(`/transporters/${id}`);
+      toast.success(data.message);
     },
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ["transporter"] });

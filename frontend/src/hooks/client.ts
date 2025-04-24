@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "../utils/api";
 import { Client } from "../types/types";
+import { toast } from "react-toastify";
 
 export const useClient = () => {
   const queryClient = useQueryClient();
@@ -32,6 +33,7 @@ export const useClient = () => {
   >({
     mutationFn: async (formData) => {
       const { data } = await api.post("/client/add", formData);
+      toast.success(data.message);
       return data;
     },
     onMutate: async (newClient) => {
@@ -64,7 +66,8 @@ export const useClient = () => {
     { previousClients?: Client[] }
   >({
     mutationFn: async ({ id, updates }) => {
-      const { data } = await api.put<Client>(`/client/${id}`, updates);
+      const { data } = await api.put(`/client/${id}`, updates);
+      toast.success(data.message);
       return data;
     },
     onMutate: async ({ id, updates }) => {
@@ -97,7 +100,8 @@ export const useClient = () => {
     { previousClients?: Client[] }
   >({
     mutationFn: async (id) => {
-      await api.delete(`/client/${id}`);
+      const { data } = await api.delete(`/client/${id}`);
+      toast.success(data.message);
     },
 
     onMutate: async (id) => {
