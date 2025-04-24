@@ -12,6 +12,7 @@ import axios from "axios";
 import { STATES } from "../constants/state";
 import { TbBuildingEstate } from "react-icons/tb";
 import { CiUser } from "react-icons/ci";
+import Loading from "../components/UI/Loading";
 
 const UpdateTransporter = () => {
   const { id } = useParams();
@@ -76,7 +77,7 @@ const UpdateTransporter = () => {
       }
     }
   };
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) return <Loading />;
   return (
     <div className="bg-[#edf7fd] bg-cover min-h-screen lg:h-screen overflow-hidden flex flex-col lg:flex-row w-full text-main">
       <div className=" w-0 lg:w-1/5 z-5">

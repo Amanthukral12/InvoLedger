@@ -18,6 +18,7 @@ import { MdDelete } from "react-icons/md";
 import { IoIosAddCircleOutline } from "react-icons/io";
 import axios from "axios";
 import { useInvoice } from "../hooks/invoices";
+import Loading from "../components/UI/Loading";
 
 const UpdateInvoice = () => {
   const { id } = useParams();
@@ -262,7 +263,7 @@ const UpdateInvoice = () => {
       }
     }
   };
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) return <Loading />;
   return (
     <div className="bg-[#edf7fd] bg-cover min-h-screen overflow-hidden lg:h-screen flex flex-col lg:flex-row w-full text-main">
       <div className=" w-0 lg:w-1/5 z-5">

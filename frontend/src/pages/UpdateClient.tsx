@@ -13,6 +13,7 @@ import Sidebar from "../components/UI/Sidebar";
 import { IoMenu } from "react-icons/io5";
 import NavigationBar from "../components/UI/NavigationBar";
 import axios from "axios";
+import Loading from "../components/UI/Loading";
 
 const UpdateClient = () => {
   const { id } = useParams();
@@ -79,7 +80,7 @@ const UpdateClient = () => {
     }
   };
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) return <Loading />;
 
   return (
     <div className="bg-[#edf7fd] bg-cover min-h-screen lg:h-screen overflow-hidden flex flex-col lg:flex-row w-full text-main">

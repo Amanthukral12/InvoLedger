@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useAuth } from "../hooks/auth";
 import useAuthStore from "../store/authStore";
 import { Outlet } from "react-router-dom";
+import Loading from "../components/UI/Loading";
 
 const AuthProvider = () => {
   const { sessionQuery } = useAuth();
@@ -16,7 +17,7 @@ const AuthProvider = () => {
   }, [sessionQuery.data, sessionQuery.isLoading]);
 
   if (sessionQuery.isFetching) {
-    return <div>Loading ...</div>;
+    return <Loading />;
   }
 
   return <Outlet />;

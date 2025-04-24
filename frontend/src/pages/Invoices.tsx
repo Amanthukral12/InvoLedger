@@ -12,6 +12,7 @@ import { FaRegEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { monthNames } from "../constants/months";
 import axios from "axios";
+import Loading from "../components/UI/Loading";
 const Invoices = () => {
   const [showSideBar, setShowSideBar] = useState(false);
   const { selectedYear, selectedMonth, setMonth, setYear } = useInvoiceStore();
@@ -55,7 +56,7 @@ const Invoices = () => {
   };
 
   if (invoiceQuery.isLoading) {
-    return <p>Loading invoices...</p>;
+    return <Loading />;
   }
 
   if (invoiceQuery.isError) {

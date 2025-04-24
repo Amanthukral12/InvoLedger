@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import useAuthStore from "../store/authStore";
 import { IoMenu } from "react-icons/io5";
 import { parseUserAgent } from "../utils/deviceInfo";
+import Loading from "../components/UI/Loading";
 const Profile = () => {
   const { getAllSessionsQuery } = useAuth();
   const currentSession = useAuthStore((state) => state.currentSession);
@@ -30,7 +31,7 @@ const Profile = () => {
   }, []);
 
   if (getAllSessionsQuery.isFetching) {
-    return <div>Loading sessions...</div>;
+    return <Loading />;
   }
 
   const getDeviceIcon = (deviceType: string) => {
