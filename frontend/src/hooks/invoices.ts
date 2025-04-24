@@ -25,6 +25,18 @@ export const useInvoice = () => {
     },
     placeholderData: true,
   });
+
+  const invoiceCountQuery = useQuery({
+    queryKey: ["invoiceCount", selectedYear],
+    queryFn: async () => {
+      const { data } = await api.get("/invoice/getInvoicesCount", {
+        params: {
+          year: selectedYear,
+        },
+      });
+      return data.data;
+    },
+  });
   const createInvoiceMutation = useMutation<
     Invoice,
     Error,
@@ -173,5 +185,6 @@ export const useInvoice = () => {
     updateInvoiceMutation,
     deleteInvoiceMutation,
     generateInvoiceMutation,
+    invoiceCountQuery,
   };
 };

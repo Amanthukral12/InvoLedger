@@ -357,3 +357,76 @@ export const getAllInvoicesForCompany = asyncHandler(
     );
   }
 );
+
+export const getInvoiceCount = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.company) {
+      throw new ApiError(401, "Unauthorized Access. Please login again", [
+        "Unauthorized Access. Please login again",
+      ]);
+    }
+    const companyId = req.company.id;
+
+    const year = req.query.year || new Date().getFullYear();
+    console.log(year, companyId);
+
+    type MonthlyInvoiceCount = {
+      monthName: string;
+      count: number;
+    };
+
+    const result = await prisma.$queryRaw<MonthlyInvoiceCount[]>`
+      SELECT 
+      to_char(DATE_TRUNC('month', "invoiceDate"), 'FMMonth') AS "monthName",
+      COUNT(*)::int as count
+      from "Invoice"
+      where "companyId" = ${Number(companyId)} and EXTRACT(YEAR from "invoiceDate") = ${Number(year)}
+      GROUP BY DATE_TRUNC('month', "invoiceDate")
+      ORDER BY DATE_TRUNC('month', "invoiceDate")
+    `;
+    const allMonths = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+
+    const monthlyCount = allMonths.map((monthName) => {
+      const entry = result.find(
+        (r) => r.monthName.toLowerCase() === monthName.toLowerCase()
+      );
+      return {
+        monthName: monthName,
+        count: entry ? entry.count : 0,
+      };
+    });
+    const totalCount = await prisma.invoice.count({
+      where: {
+        companyId: Number(companyId),
+        invoiceDate: {
+          gte: new Date(Number(year), 0, 1),
+          lte: new Date(Number(year), 11, 31),
+        },
+      },
+    });
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          monthlyCount,
+          totalCount,
+        },
+        "Invoices count fetched successfully"
+      )
+    );
+  }
+);

@@ -6,12 +6,14 @@ import {
   generateInvoice,
   getAllInvoicesForCompany,
   getInvoiceById,
+  getInvoiceCount,
   updateInvoice,
 } from "../controller/invoice.controller";
 
 const router = Router();
 
 router.route("/add").post(authenticateSession, createInvoice);
+router.route("/getInvoicesCount").get(authenticateSession, getInvoiceCount);
 router.route("/").get(authenticateSession, getAllInvoicesForCompany);
 router
   .route("/generate-invoice/:id")
