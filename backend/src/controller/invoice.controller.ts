@@ -298,7 +298,7 @@ export const getAllInvoicesForCompany = asyncHandler(
     const currentYear = new Date().getFullYear();
     const {
       page = 1,
-      limit = 10,
+      limit = 6,
       month = currentMonth,
       year = currentYear,
     } = req.query;

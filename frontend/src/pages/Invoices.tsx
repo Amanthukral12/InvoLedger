@@ -15,7 +15,15 @@ import axios from "axios";
 import Loading from "../components/UI/Loading";
 const Invoices = () => {
   const [showSideBar, setShowSideBar] = useState(false);
-  const { selectedYear, selectedMonth, setMonth, setYear } = useInvoiceStore();
+  const {
+    selectedYear,
+    selectedMonth,
+    setMonth,
+    setYear,
+    currentPage,
+    pageSize,
+    setCurrentPage,
+  } = useInvoiceStore();
   const { invoiceQuery, deleteInvoiceMutation, generateInvoiceMutation } =
     useInvoice();
   const [invoiceType, setInvoiceType] = useState("ORIGINAL");
@@ -178,6 +186,31 @@ const Invoices = () => {
               </div>
             ))}
           </div>
+          {totalCount > 0 && (
+            <div className="flex justify-center items-center gap-4 my-6">
+              <button
+                onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
+                className="px-4 py-2 bg-main text-white rounded cursor-pointer disabled:cursor-default disabled:opacity-50"
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+              <span className="text-lg font-semibold">
+                Page {currentPage} of {Math.ceil(totalCount / pageSize)}
+              </span>
+              <button
+                onClick={() => {
+                  setCurrentPage(
+                    Math.min(currentPage + 1, Math.ceil(totalCount / pageSize))
+                  );
+                }}
+                className="px-4 py-2 bg-main text-white rounded cursor-pointer disabled:cursor-default disabled:opacity-50"
+                disabled={currentPage >= Math.ceil(totalCount / pageSize)}
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       </section>
     </div>
