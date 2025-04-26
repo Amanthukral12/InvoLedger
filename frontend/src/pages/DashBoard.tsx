@@ -31,8 +31,8 @@ const DashBoard = () => {
       </div>
       <section className="w-full lg:w-4/5 overflow-y-auto h-full">
         <CompanyHeader />
-        <div className="mx-3">
-          <div className="flex justify-between mb-4 mx-0 lg:mx-2">
+        <div className="w-full">
+          <div className="flex justify-between mb-4 mx-3 lg:mx-3">
             <h3 className="text-lg lg:text-2xl font-semibold mb-4">Invoices</h3>
             <Link to={"/companyInvoices/add"}>
               <button className="text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer">
@@ -56,7 +56,7 @@ const DashBoard = () => {
               ))}
             </select>
           </div>
-          <div className="mb-16">
+          <div className="mb-16 -ml-6">
             {data && data.monthlyCount && (
               <BarChartComponent data={data.monthlyCount} />
             )}

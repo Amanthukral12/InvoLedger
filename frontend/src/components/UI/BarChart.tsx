@@ -14,7 +14,7 @@ const BarChartComponent = ({
   data: { monthName: string; count: number }[];
 }) => {
   return (
-    <ResponsiveContainer width="100%" height={400}>
+    <ResponsiveContainer width="95%" height={400}>
       <BarChart data={data} margin={{ top: 20, right: 0, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis
