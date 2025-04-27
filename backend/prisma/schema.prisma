@@ -49,18 +49,20 @@ model Session {
 }
 
 model Client {
-  id          String    @id @default(uuid())
-  name        String
-  address     String
-  GSTIN       String    @unique
-  email       String?
-  phonenumber String?
-  companyId   Int
-  state       String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  company     Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  invoices    Invoice[]
+  id           String        @id @default(uuid())
+  name         String
+  address      String
+  GSTIN        String        @unique
+  email        String?
+  phonenumber  String?
+  balance      Float         @default(0)
+  companyId    Int
+  state        String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  invoices     Invoice[]
+  transactions Transaction[]
 
   @@unique([companyId, GSTIN])
 }
@@ -131,4 +133,24 @@ model ShipToParty {
   Invoice   Invoice[]
 
   @@unique([GSTIN, companyId])
+}
+
+model Transaction {
+  id          String          @id @default(uuid())
+  companyId   Int
+  clientId    String
+  client      Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  amount      Float
+  type        TransactionType
+  description String?
+  date        DateTime        @default(now())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([clientId])
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
 }
