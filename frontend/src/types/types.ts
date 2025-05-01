@@ -114,3 +114,13 @@ export interface CustomInvoiceData {
     name: string;
   };
 }
+
+export interface Transaction {
+  id: string;
+  clientId: string;
+  companyId: number;
+  amount: number;
+  type: "CREDIT" | "DEBIT";
+  date: Date;
+  description: string | null;
+}
