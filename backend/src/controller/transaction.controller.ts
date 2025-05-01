@@ -12,10 +12,11 @@ export const createTransaction = asyncHandler(
       ]);
     }
     const companyId = req.company.id;
+    const clientId = req.params.clientId;
 
-    const { clientId, amount, type, date, description } = req.body;
+    const { amount, type, date, description } = req.body;
 
-    if (!clientId || !amount || !type || !date || !description) {
+    if (!clientId || !amount || !type || !date) {
       throw new ApiError(400, "Please fill all the fields", [
         "Please fill all the fields",
       ]);
@@ -102,5 +103,34 @@ export const deleteTransaction = asyncHandler(
     return res
       .status(200)
       .json(new ApiResponse(200, {}, "Transaction deleted successfully"));
+  }
+);
+
+export const getAllTransactionsForClient = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.company) {
+      throw new ApiError(401, "Unauthorized Access. Please login again", [
+        "Unauthorized Access. Please login again",
+      ]);
+    }
+    const currentYear = new Date().getFullYear();
+    const companyId = req.company.id;
+    const clientId = req.params.clientId;
+    const { year = currentYear } = req.query;
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        clientId: clientId,
+        companyId: Number(companyId),
+        date: {
+          gte: new Date(Number(year), 0, 1),
+          lte: new Date(Number(year), 11, 31),
+        },
+      },
+    });
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200, transactions, "Transactions fetched successfully")
+      );
   }
 );

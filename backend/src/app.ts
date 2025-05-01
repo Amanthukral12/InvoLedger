@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth.routes";
 import clientRoutes from "./routes/client.routes";
 import transporterRoutes from "./routes/transporters.routes";
 import invoiceRoutes from "./routes/invoice.routes";
+import trnasactionRoutes from "./routes/transactions.routes";
 import PgSession from "connect-pg-simple";
 import session from "express-session";
 import cors from "cors";
@@ -51,6 +52,7 @@ app.use("/", authRoutes);
 app.use("/client", clientRoutes);
 app.use("/transporters", transporterRoutes);
 app.use("/invoice", invoiceRoutes);
+app.use("/transactions", trnasactionRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running");
