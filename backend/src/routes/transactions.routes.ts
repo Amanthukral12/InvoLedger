@@ -10,7 +10,7 @@ const router = Router();
 
 router.route("/:clientId/add").post(authenticateSession, createTransaction);
 router
-  .route("/:cliendId/getTransactions")
+  .route("/:clientId/getTransactions")
   .get(authenticateSession, getAllTransactionsForClient);
 
 router.route("/:clientId/:id").delete(authenticateSession, deleteTransaction);
