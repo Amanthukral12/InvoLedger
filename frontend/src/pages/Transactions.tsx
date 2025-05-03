@@ -103,19 +103,19 @@ const Transactions = () => {
       <Sidebar shown={showSideBar} close={() => setShowSideBar(!showSideBar)} />
       <section className="w-full lg:w-4/5 overflow-y-auto h-full mb-16">
         <ClientHeader />
-        <div className="mx-3">
+        <div className="mx-3 mb-4">
           <div className="flex justify-between mb-4 mx-0 lg:mx-2">
             <h3 className="text-lg lg:text-2xl font-semibold mb-4">Ledger</h3>
           </div>
           <form
-            className="w-full md:w-4/5 flex mb-4 justify-between p-2 md:mx-auto"
+            className="w-full md:w-4/5 flex flex-col md:flex-row mb-4 justify-between p-2 md:mx-auto"
             onSubmit={handleSubmit}
           >
             <input
               type="date"
               name="date"
               onChange={handleChange}
-              className="bg-white p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base"
+              className="bg-white p-2 mb-2 md:mb-0 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base"
               value={format(new Date(formData.date), "yyyy-MM-dd")}
             />
             <input
@@ -124,13 +124,13 @@ const Transactions = () => {
               name="amount"
               onChange={handleChange}
               value={formData.amount}
-              className="bg-white p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base"
+              className="bg-white p-2 mb-2 md:mb-0 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base"
             />
             <select
               name="type"
               onChange={handleChange}
               value={formData.type}
-              className="bg-white p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base"
+              className="bg-white p-2 mb-2 md:mb-0 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base"
             >
               <option value="CREDIT">CREDIT</option>
               <option value="DEBIT">DEBIT</option>
