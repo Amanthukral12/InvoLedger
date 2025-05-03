@@ -8,12 +8,85 @@ import useTransactionStore from "../store/transactionStore";
 import { Transaction } from "../types/types";
 import { format } from "date-fns";
 import { MdDelete } from "react-icons/md";
+import axios from "axios";
+import { useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Transactions = () => {
   const [showSideBar, setShowSideBar] = useState(false);
+  const { id: clientId } = useParams();
   const { selectedYear, setSelectedYear } = useTransactionStore();
-  const { transactionQuery } = useTransaction();
+  const {
+    transactionQuery,
+    deleteTransactionMutation,
+    createTransactionMutation,
+  } = useTransaction();
   const transactions = transactionQuery.data ?? [];
+
+  const [formData, setFormData] = useState<{
+    date: Date;
+    amount: number;
+    type: "CREDIT" | "DEBIT";
+  }>({
+    date: new Date(),
+    amount: 0,
+    type: "CREDIT",
+  });
+
+  const deleteHandler = async ({
+    clientId,
+    id,
+  }: {
+    clientId: string;
+    id: string;
+  }) => {
+    try {
+      await deleteTransactionMutation.mutateAsync({ clientId, id });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      } else {
+        console.error("Unexpected error:", error);
+      }
+    }
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]:
+        name === "amount"
+          ? Number(value)
+          : name === "date"
+          ? new Date(value)
+          : value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    try {
+      e.preventDefault();
+      if (!clientId) {
+        toast.error("Client ID is missing.");
+        return;
+      }
+      await createTransactionMutation.mutateAsync({
+        clientId,
+        formData,
+      });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+        toast.error(error.response?.data.message);
+      } else {
+        console.error("Unexpected error:", error);
+      }
+    }
+  };
   return (
     <div className="bg-[#edf7fd] bg-cover min-h-screen lg:h-screen overflow-hidden flex flex-col lg:flex-row w-full text-main">
       <div className=" w-0 lg:w-1/5 z-5">
@@ -34,6 +107,38 @@ const Transactions = () => {
           <div className="flex justify-between mb-4 mx-0 lg:mx-2">
             <h3 className="text-lg lg:text-2xl font-semibold mb-4">Ledger</h3>
           </div>
+          <form
+            className="w-full md:w-4/5 flex mb-4 justify-between p-2 md:mx-auto"
+            onSubmit={handleSubmit}
+          >
+            <input
+              type="date"
+              name="date"
+              onChange={handleChange}
+              className="bg-white p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base"
+              value={format(new Date(formData.date), "yyyy-MM-dd")}
+            />
+            <input
+              type="text"
+              placeholder="amount"
+              name="amount"
+              onChange={handleChange}
+              value={formData.amount}
+              className="bg-white p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base"
+            />
+            <select
+              name="type"
+              onChange={handleChange}
+              value={formData.type}
+              className="bg-white p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base"
+            >
+              <option value="CREDIT">CREDIT</option>
+              <option value="DEBIT">DEBIT</option>
+            </select>
+            <button className=" text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer block">
+              Add
+            </button>
+          </form>
           <div className="flex justify-center mb-3">
             <select
               className=" mr-3 bg-white p-2 rounded-lg text-lg font-medium focus:border-none focus:outline-none"
@@ -78,7 +183,16 @@ const Transactions = () => {
                       </td>
                       <td>
                         <button>
-                          <MdDelete />
+                          <MdDelete
+                            className="text-3xl cursor-pointer"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              deleteHandler({
+                                clientId: transaction.clientId,
+                                id: transaction.id,
+                              });
+                            }}
+                          />
                         </button>
                       </td>
                     </tr>

@@ -14,7 +14,7 @@ const ClientHeader = () => {
       setSelectedClient(data.data);
       return data.data;
     },
-    enabled: !selectedClient,
+    enabled: !!id,
   });
 
   const client = selectedClient || fetchedClient;
