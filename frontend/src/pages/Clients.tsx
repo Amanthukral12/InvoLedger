@@ -57,8 +57,10 @@ const Clients = () => {
           <div className="w-[90%] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-6">
             {clients?.map((client: Client) => {
               return (
-                <div
+                <Link
+                  to={`/companyClients/${client.id}`}
                   key={client.id}
+                  onClick={() => setSelectedClient(client)}
                   className="bg-white my-1 rounded-lg p-2 text-main shadow-md flex flex-col justify-between"
                 >
                   <div className="flex w-full justify-between">
@@ -90,7 +92,7 @@ const Clients = () => {
                       />
                     </div>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
