@@ -52,7 +52,7 @@ const Transporters = () => {
               Transporters
             </h3>
             <Link to={"/companyTransporters/add"}>
-              <button className="text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer">
+              <button className="text-base md:text-lg font-semibold text-white bg-main px-4 md:px-8 py-1 rounded-xl cursor-pointer">
                 Add New Transporter
               </button>
             </Link>
