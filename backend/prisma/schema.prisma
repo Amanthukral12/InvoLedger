@@ -52,7 +52,7 @@ model Client {
   id           String        @id @default(uuid())
   name         String
   address      String
-  GSTIN        String        @unique
+  GSTIN        String
   email        String?
   phonenumber  String?
   balance      Float         @default(0)
