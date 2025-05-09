@@ -125,7 +125,7 @@ model ShipToParty {
   companyId Int
   name      String
   address   String
-  GSTIN     String    @unique
+  GSTIN     String
   state     String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
