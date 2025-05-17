@@ -109,6 +109,13 @@ model InvoiceItem {
   unitPrice   Float
   hsnCode     String
   amount      Float
+  taxPercent  Float?
+  sgstPercent Float?
+  cgstPercent Float?
+  igstPercent Float?
+  sgst        Float?
+  cgst        Float?
+  igst        Float?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
