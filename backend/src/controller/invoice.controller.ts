@@ -22,13 +22,6 @@ export const createInvoice = asyncHandler(
       amount,
       cartage,
       subTotal,
-      taxPercent,
-      sgstPercent,
-      cgstPercent,
-      igstPercent,
-      sgst,
-      cgst,
-      igst,
       totalAmount,
       totalAmountInWords,
       reverseCharge,
@@ -51,13 +44,6 @@ export const createInvoice = asyncHandler(
           amount,
           cartage,
           subTotal,
-          taxPercent,
-          sgstPercent,
-          cgstPercent,
-          igstPercent,
-          sgst,
-          cgst,
-          igst,
           totalAmount,
           totalAmountInWords,
           reverseCharge,
@@ -71,6 +57,13 @@ export const createInvoice = asyncHandler(
               unitPrice: item.unitPrice,
               hsnCode: item.hsnCode,
               amount: item.amount,
+              sgst: item.sgst,
+              cgst: item.cgst,
+              igst: item.igst,
+              sgstPercent: item.sgstPercent,
+              cgstPercent: item.cgstPercent,
+              igstPercent: item.igstPercent,
+              taxPercent: item.taxPercent,
             })),
           },
         },
@@ -368,7 +361,6 @@ export const getInvoiceCount = asyncHandler(
     const companyId = req.company.id;
 
     const year = req.query.year || new Date().getFullYear();
-    console.log(year, companyId);
 
     type MonthlyInvoiceCount = {
       monthName: string;

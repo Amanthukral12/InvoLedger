@@ -75,6 +75,13 @@ export interface InvoiceItem {
   unitPrice: number;
   hsnCode: string;
   amount: number;
+  taxPercent: number | null;
+  sgstPercent: number | null;
+  cgstPercent: number | null;
+  igstPercent: number | null;
+  sgst: number | null;
+  cgst: number | null;
+  igst: number | null;
 }
 
 export interface Invoice {
@@ -87,13 +94,6 @@ export interface Invoice {
   amount: number;
   cartage: number | null;
   subTotal: number;
-  taxPercent: number | null;
-  sgstPercent: number | null;
-  cgstPercent: number | null;
-  igstPercent: number | null;
-  sgst: number | null;
-  cgst: number | null;
-  igst: number | null;
   totalAmount: number;
   totalAmountInWords: string;
   reverseCharge: boolean;
