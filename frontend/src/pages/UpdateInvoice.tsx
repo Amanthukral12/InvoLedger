@@ -54,13 +54,9 @@ const UpdateInvoice = () => {
     amount: 0,
     cartage: 0,
     subTotal: 0,
-    taxPercent: 0,
-    sgstPercent: 0,
-    cgstPercent: 0,
-    igstPercent: 0,
-    sgst: 0,
-    cgst: 0,
-    igst: 0,
+    totalIgst: 0,
+    totalCgst: 0,
+    totalSgst: 0,
     totalAmount: 0,
     totalAmountInWords: "",
     reverseCharge: false,
@@ -77,6 +73,13 @@ const UpdateInvoice = () => {
       unitPrice: 0,
       hsnCode: "",
       amount: 0,
+      taxPercent: 0,
+      sgstPercent: 0,
+      cgstPercent: 0,
+      igstPercent: 0,
+      sgst: 0,
+      cgst: 0,
+      igst: 0,
     },
   ]);
 
@@ -92,13 +95,9 @@ const UpdateInvoice = () => {
         amount: fetchedInvoice.amount || 0,
         cartage: fetchedInvoice.cartage || 0,
         subTotal: fetchedInvoice.subTotal || 0,
-        taxPercent: fetchedInvoice.taxPercent || 0,
-        sgstPercent: fetchedInvoice.sgstPercent || 0,
-        cgstPercent: fetchedInvoice.cgstPercent || 0,
-        igstPercent: fetchedInvoice.igstPercent || 0,
-        sgst: fetchedInvoice.sgst || 0,
-        cgst: fetchedInvoice.cgst || 0,
-        igst: fetchedInvoice.igst || 0,
+        totalCgst: fetchedInvoice.totalCgst || 0,
+        totalSgst: fetchedInvoice.totalSgst || 0,
+        totalIgst: fetchedInvoice.totalIgst || 0,
         totalAmount: fetchedInvoice.totalAmount || 0,
         totalAmountInWords: fetchedInvoice.totalAmountInWords || "",
         reverseCharge: fetchedInvoice.reverseCharge || false,
@@ -106,7 +105,21 @@ const UpdateInvoice = () => {
         vehicleNumber: fetchedInvoice.vehicleNumber || "",
         placeOfSupply: fetchedInvoice.placeOfSupply || "",
       });
-      setInvoiceItems(fetchedInvoice.invoiceItems || []);
+      setInvoiceItems(
+        (fetchedInvoice.invoiceItems || []).map((item) => ({
+          ...item,
+          taxPercent: item.taxPercent || 0,
+          sgstPercent: item.sgstPercent || 0,
+          cgstPercent: item.cgstPercent || 0,
+          igstPercent: item.igstPercent || 0,
+          sgst: item.sgst || 0,
+          cgst: item.cgst || 0,
+          igst: item.igst || 0,
+          quantity: item.quantity || 0,
+          unitPrice: item.unitPrice || 0,
+          amount: item.amount || 0,
+        }))
+      );
     }
   }, [fetchedInvoice]);
 
@@ -132,7 +145,9 @@ const UpdateInvoice = () => {
       const updatedItem = {
         ...currentItem,
         [name]:
-          name === "quantity" || name === "unitPrice" ? Number(value) : value,
+          name === "quantity" || name === "unitPrice" || name === "taxPercent"
+            ? Number(value)
+            : value,
       };
 
       const quantity =
@@ -140,6 +155,26 @@ const UpdateInvoice = () => {
       const unitPrice =
         name === "unitPrice" ? Number(value) : currentItem.unitPrice;
       updatedItem.amount = Number(quantity * unitPrice);
+
+      const isSameState = clientState ? company?.state === clientState : false;
+      const taxPercent =
+        name === "taxPercent" ? Number(value) : currentItem.taxPercent;
+      if (isSameState) {
+        const halfTax = taxPercent / 2;
+        updatedItem.cgstPercent = halfTax;
+        updatedItem.sgstPercent = halfTax;
+        updatedItem.igstPercent = 0;
+        updatedItem.cgst = (halfTax * updatedItem.amount) / 100;
+        updatedItem.sgst = (halfTax * updatedItem.amount) / 100;
+        updatedItem.igst = 0;
+      } else {
+        updatedItem.cgstPercent = 0;
+        updatedItem.sgstPercent = 0;
+        updatedItem.igstPercent = taxPercent;
+        updatedItem.cgst = 0;
+        updatedItem.sgst = 0;
+        updatedItem.igst = (taxPercent * updatedItem.amount) / 100;
+      }
 
       updated[index] = updatedItem;
       return updated;
@@ -157,6 +192,13 @@ const UpdateInvoice = () => {
         unitPrice: 0,
         hsnCode: "",
         amount: 0,
+        taxPercent: 0,
+        sgstPercent: 0,
+        cgstPercent: 0,
+        igstPercent: 0,
+        sgst: 0,
+        cgst: 0,
+        igst: 0,
       },
     ]);
   };
@@ -172,16 +214,7 @@ const UpdateInvoice = () => {
   ) => {
     const { name, value } = e.target;
 
-    const numericFields = [
-      "cartage",
-      "cgst",
-      "sgst",
-      "igst",
-      "taxPercent",
-      "cgstPercent",
-      "sgstPercent",
-      "igstPercent",
-    ];
+    const numericFields = ["cartage"];
     setFormData((prev) => ({
       ...prev,
       [name]: numericFields.includes(name) ? Number(value) : value,
@@ -189,62 +222,66 @@ const UpdateInvoice = () => {
   };
 
   useEffect(() => {
-    const isSameState = clientState ? company?.state === clientState : false;
-    if (isSameState) {
-      const halfTax = formData.taxPercent / 2;
-      const cgst = (halfTax * formData.subTotal) / 100;
-      const sgst = (halfTax * formData.subTotal) / 100;
-
-      setFormData((prev) => ({
-        ...prev,
-        cgstPercent: halfTax,
-        sgstPercent: halfTax,
-        igstPercent: 0,
-        cgst,
-        sgst,
-        igst: 0,
-      }));
-    } else {
-      const igst = (formData.taxPercent * formData.subTotal) / 100;
-      setFormData((prev) => ({
-        ...prev,
-        cgstPercent: 0,
-        sgstPercent: 0,
-        igstPercent: formData.taxPercent,
-        cgst: 0,
-        sgst: 0,
-        igst,
-      }));
-    }
-  }, [formData.taxPercent, formData.subTotal, clientState, company?.state]);
-
-  useEffect(() => {
     const itemsAmount = invoiceItems.reduce(
       (sum, item) => sum + item.amount,
       0
     );
+    const totalSgst = invoiceItems.reduce((sum, item) => sum + item.sgst, 0);
+    const totalCgst = invoiceItems.reduce((sum, item) => sum + item.cgst, 0);
+    const totalIgst = invoiceItems.reduce((sum, item) => sum + item.igst, 0);
     const subTotal = itemsAmount + Number(formData.cartage);
-    const totalAmount =
-      subTotal +
-      Number(formData.sgst) +
-      Number(formData.cgst) +
-      Number(formData.igst);
+    const totalAmount = Math.floor(
+      subTotal + Number(totalSgst) + Number(totalCgst) + Number(totalIgst)
+    );
+
     const amountInWords = inWords(totalAmount)?.toLocaleUpperCase() || "";
 
     setFormData((prev) => ({
       ...prev,
       amount: itemsAmount,
+      totalCgst,
+      totalSgst,
+      totalIgst,
       subTotal,
       totalAmount,
       totalAmountInWords: amountInWords,
     }));
-  }, [
-    invoiceItems,
-    formData.cartage,
-    formData.sgst,
-    formData.cgst,
-    formData.igst,
-  ]);
+  }, [invoiceItems, formData.cartage]);
+
+  useEffect(() => {
+    if (invoiceItems.length > 0) {
+      const isSameState = clientState ? company?.state === clientState : false;
+
+      setInvoiceItems((prevItems) =>
+        prevItems.map((item) => {
+          const taxPercent = item.taxPercent;
+          if (isSameState) {
+            const halfTax = taxPercent / 2;
+            return {
+              ...item,
+              sgstPercent: halfTax,
+              cgstPercent: halfTax,
+              igstPercent: 0,
+              sgst: (halfTax * item.amount) / 100,
+              cgst: (halfTax * item.amount) / 100,
+              igst: 0,
+            };
+          } else {
+            return {
+              ...item,
+              sgstPercent: 0,
+              cgstPercent: 0,
+              igstPercent: taxPercent,
+              sgst: 0,
+              cgst: 0,
+              igst: (taxPercent * item.amount) / 100,
+            };
+          }
+        })
+      );
+    }
+  }, [clientState, company?.state, invoiceItems.length]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     const finalInvoice = {
       ...formData,
@@ -353,7 +390,7 @@ const UpdateInvoice = () => {
             <div className="w-full md:w-4/5 mx-auto relative mb-4">
               <h3 className="text-2xl font-medium mb-2">Invoice Items</h3>
 
-              <div className="flex flex-col gap-4 md:hidden">
+              <div className="flex flex-col gap-4">
                 {invoiceItems.map((item, index) => (
                   <div
                     key={item.id}
@@ -413,6 +450,54 @@ const UpdateInvoice = () => {
                         className="w-full p-1 border bg-gray-100 cursor-not-allowed border-gray-300 mt-1"
                       />
                     </div>
+                    <div className="mb-2">
+                      <label className="font-semibold text-sm">
+                        Tax Percent
+                      </label>
+                      <input
+                        type="number"
+                        name="taxPercent"
+                        value={item.taxPercent}
+                        onChange={(e) => handleItemChange(index, e)}
+                        className="w-full p-1 border border-gray-300 mt-1"
+                      />
+                    </div>
+                    <div className="mb-2">
+                      <label className="font-semibold text-sm">
+                        SGST Percent
+                      </label>
+                      <input
+                        type="number"
+                        name="sgstPercent"
+                        value={item.sgstPercent}
+                        readOnly
+                        className="w-full p-1 border bg-gray-100 cursor-not-allowed border-gray-300 mt-1"
+                      />
+                    </div>
+                    <div className="mb-2">
+                      <label className="font-semibold text-sm">
+                        CGST Percent
+                      </label>
+                      <input
+                        type="number"
+                        name="cgstPercent"
+                        value={item.cgstPercent}
+                        readOnly
+                        className="w-full p-1 border bg-gray-100 cursor-not-allowed border-gray-300 mt-1"
+                      />
+                    </div>
+                    <div className="mb-2">
+                      <label className="font-semibold text-sm">
+                        IGST Percent
+                      </label>
+                      <input
+                        type="number"
+                        name="igstPercent"
+                        value={item.igstPercent}
+                        readOnly
+                        className="w-full p-1 border bg-gray-100 cursor-not-allowed border-gray-300 mt-1"
+                      />
+                    </div>
                     <button
                       type="button"
                       onClick={() => removeItem(index)}
@@ -423,82 +508,6 @@ const UpdateInvoice = () => {
                   </div>
                 ))}
               </div>
-              <table className="w-full border border-gray-300 text-sm hidden md:block">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="border md:px-2 py-1">Description</th>
-                    <th className="border md:px-2 py-1">HSN Code</th>
-                    <th className="border md:px-2 py-1">Quantity</th>
-                    <th className="border md:px-2 py-1">Unit Price</th>
-                    <th className="border md:px-2 py-1">Amount</th>
-                    <th className="border md:px-2 py-1">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {invoiceItems.map((item, index) => (
-                    <tr key={item.id}>
-                      <td className="md:px-2 py-1">
-                        <input
-                          type="text"
-                          name="description"
-                          placeholder="Description"
-                          value={item.description}
-                          onChange={(e) => handleItemChange(index, e)}
-                          className="w-full p-1 border border-gray-300"
-                        />
-                      </td>
-                      <td className="px-0.5  md:px-2 py-1">
-                        <input
-                          type="text"
-                          name="hsnCode"
-                          placeholder="HSN Code"
-                          value={item.hsnCode}
-                          onChange={(e) => handleItemChange(index, e)}
-                          className="w-full p-1 border border-gray-300"
-                        />
-                      </td>
-                      <td className=" px-2 py-1">
-                        <input
-                          type="number"
-                          name="quantity"
-                          placeholder="Quantity"
-                          value={item.quantity}
-                          onChange={(e) => handleItemChange(index, e)}
-                          className="w-full p-1 border border-gray-300"
-                        />
-                      </td>
-                      <td className=" px-2 py-1">
-                        <input
-                          type="number"
-                          name="unitPrice"
-                          placeholder="Unit Price"
-                          value={item.unitPrice}
-                          onChange={(e) => handleItemChange(index, e)}
-                          className="w-full p-1 border border-gray-300"
-                        />
-                      </td>
-                      <td className=" px-2 py-1">
-                        <input
-                          type="number"
-                          name="amount"
-                          value={item.amount}
-                          readOnly
-                          className="w-full p-1 bg-gray-100 cursor-not-allowed border border-gray-300"
-                        />
-                      </td>
-                      <td className=" px-2 py-1 text-center">
-                        <button
-                          type="button"
-                          onClick={() => removeItem(index)}
-                          className="ml-auto block"
-                        >
-                          <MdDelete className="text-4xl text-[#116456]" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
               <button
                 type="button"
                 onClick={addItem}
@@ -555,120 +564,56 @@ const UpdateInvoice = () => {
               </div>
               <div className="flex flex-col">
                 <label
-                  htmlFor="taxPercent"
+                  htmlFor="totalCgst"
                   className="mb-1 text-sm font-medium "
                 >
-                  Tax Percent
+                  Total CGST
                 </label>
                 <input
                   type="number"
-                  id="taxPercent"
-                  name="taxPercent"
-                  placeholder="Tax Percent"
-                  value={formData.taxPercent}
-                  onChange={handleChange}
+                  id="totalCgst"
+                  name="totalCgst"
+                  placeholder="Total CGST"
+                  value={formData.totalCgst}
+                  readOnly
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
               </div>
               <div className="flex flex-col">
                 <label
-                  htmlFor="sgstPercent"
+                  htmlFor="totalSgst"
                   className="mb-1 text-sm font-medium "
                 >
-                  SGST Percent
+                  Total SGST
                 </label>
                 <input
                   type="number"
-                  id="sgstPercent"
-                  name="sgstPercent"
-                  placeholder="sgst Percent"
+                  id="totalSgst"
+                  name="totalSgst"
+                  placeholder="Total SGST"
+                  value={formData.totalSgst}
                   readOnly
-                  value={formData.sgstPercent}
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
               </div>
               <div className="flex flex-col">
                 <label
-                  htmlFor="cgstPercent"
+                  htmlFor="totalIgst"
                   className="mb-1 text-sm font-medium "
                 >
-                  CGST Percent
+                  Total IGST
                 </label>
                 <input
                   type="number"
-                  id="cgstPercent"
-                  name="cgstPercent"
-                  placeholder="cgst Percent"
+                  id="totalIgst"
+                  name="totalIgst"
+                  placeholder="Total IGST"
+                  value={formData.totalIgst}
                   readOnly
-                  value={formData.cgstPercent}
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
               </div>
               <div className="flex flex-col">
-                <label
-                  htmlFor="igstPercent"
-                  className="mb-1 text-sm font-medium "
-                >
-                  IGST Percent
-                </label>
-                <input
-                  type="number"
-                  id="igstPercent"
-                  name="igstPercent"
-                  placeholder="igst Percent"
-                  readOnly
-                  value={formData.igstPercent}
-                  className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
-                />
-              </div>
-
-              <div className="flex flex-col">
-                <label htmlFor="sgst" className="mb-1 text-sm font-medium ">
-                  SGST
-                </label>
-                <input
-                  type="number"
-                  id="sgst"
-                  name="sgst"
-                  placeholder="SGST"
-                  readOnly
-                  value={formData.sgst}
-                  className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
-                />
-              </div>
-
-              <div className="flex flex-col">
-                <label htmlFor="cgst" className="mb-1 text-sm font-medium ">
-                  CGST
-                </label>
-                <input
-                  type="number"
-                  id="cgst"
-                  name="cgst"
-                  placeholder="CGST"
-                  readOnly
-                  value={formData.cgst}
-                  className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
-                />
-              </div>
-
-              <div className="flex flex-col">
-                <label htmlFor="igst" className="mb-1 text-sm font-medium ">
-                  IGST
-                </label>
-                <input
-                  type="number"
-                  id="igst"
-                  name="igst"
-                  placeholder="IGST"
-                  readOnly
-                  value={formData.igst}
-                  className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
-                />
-              </div>
-            </div>
-            <div className="w-full md:w-4/5 mx-auto flex mb-4">
-              <div className="flex flex-col mr-4 w-1/3 md:w-1/5">
                 <label
                   htmlFor="totalAmount"
                   className="mb-1 text-sm font-medium "
@@ -684,22 +629,22 @@ const UpdateInvoice = () => {
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
               </div>
-              <div className="flex flex-col w-2/3 md:w-4/5">
-                <label
-                  htmlFor="totalAmountInWords"
-                  className="mb-1 text-sm font-medium "
-                >
-                  Total Amount in Words
-                </label>
-                <input
-                  type="text"
-                  name="totalAmountInWords"
-                  placeholder="Total Amount in Words"
-                  value={formData.totalAmountInWords}
-                  readOnly
-                  className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
-                />
-              </div>
+            </div>
+            <div className="w-full md:w-4/5 mx-auto flex flex-col mb-4">
+              <label
+                htmlFor="totalAmountInWords"
+                className="mb-1 text-sm font-medium "
+              >
+                Total Amount in Words
+              </label>
+              <input
+                type="text"
+                name="totalAmountInWords"
+                placeholder="Total Amount in Words"
+                value={formData.totalAmountInWords}
+                readOnly
+                className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
+              />
             </div>
 
             <div className="w-full md:w-4/5 mx-auto relative mb-4">
