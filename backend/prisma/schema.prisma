@@ -78,13 +78,9 @@ model Invoice {
   amount             Float
   cartage            Float?
   subTotal           Float
-  taxPercent         Float?
-  sgstPercent        Float?
-  cgstPercent        Float?
-  igstPercent        Float?
-  sgst               Float?
-  cgst               Float?
-  igst               Float?
+  totalIgst          Float?
+  totalCgst          Float?
+  totalSgst          Float?
   totalAmount        Float
   totalAmountInWords String
   reverseCharge      Boolean      @default(false)

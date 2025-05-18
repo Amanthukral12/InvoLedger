@@ -70,13 +70,9 @@ export interface InvoiceDocument {
   amount: number;
   cartage: number | null;
   subTotal: number;
-  taxPercent: number | null;
-  sgstPercent: number | null;
-  cgstPercent: number | null;
-  igstPercent: number | null;
-  sgst: number | null;
-  cgst: number | null;
-  igst: number | null;
+  totalIgst: number | null;
+  totalCgst: number | null;
+  totalSgst: number | null;
   totalAmount: number;
   totalAmountInWords: string;
   reverseCharge: boolean;

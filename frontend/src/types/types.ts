@@ -94,6 +94,9 @@ export interface Invoice {
   amount: number;
   cartage: number | null;
   subTotal: number;
+  totalIgst: number | null;
+  totalCgst: number | null;
+  totalSgst: number | null;
   totalAmount: number;
   totalAmountInWords: string;
   reverseCharge: boolean;

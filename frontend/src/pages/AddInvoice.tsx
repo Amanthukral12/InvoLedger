@@ -41,6 +41,9 @@ const AddInvoice = () => {
     amount: 0,
     cartage: 0,
     subTotal: 0,
+    totalIgst: 0,
+    totalCgst: 0,
+    totalSgst: 0,
     totalAmount: 0,
     totalAmountInWords: "",
     reverseCharge: false,
@@ -183,6 +186,9 @@ const AddInvoice = () => {
     setFormData((prev) => ({
       ...prev,
       amount: itemsAmount,
+      totalCgst,
+      totalSgst,
+      totalIgst,
       subTotal,
       totalAmount,
       totalAmountInWords: amountInWords,
@@ -500,6 +506,57 @@ const AddInvoice = () => {
                   placeholder="Sub Total"
                   value={formData.subTotal}
                   onChange={handleChange}
+                  className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
+                />
+              </div>
+              <div className="flex flex-col">
+                <label
+                  htmlFor="totalCgst"
+                  className="mb-1 text-sm font-medium "
+                >
+                  Total CGST
+                </label>
+                <input
+                  type="number"
+                  id="totalCgst"
+                  name="totalCgst"
+                  placeholder="Total CGST"
+                  value={formData.totalCgst}
+                  readOnly
+                  className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
+                />
+              </div>
+              <div className="flex flex-col">
+                <label
+                  htmlFor="totalSgst"
+                  className="mb-1 text-sm font-medium "
+                >
+                  Total SGST
+                </label>
+                <input
+                  type="number"
+                  id="totalSgst"
+                  name="totalSgst"
+                  placeholder="Total SGST"
+                  value={formData.totalSgst}
+                  readOnly
+                  className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
+                />
+              </div>
+              <div className="flex flex-col">
+                <label
+                  htmlFor="totalIgst"
+                  className="mb-1 text-sm font-medium "
+                >
+                  Total IGST
+                </label>
+                <input
+                  type="number"
+                  id="totalIgst"
+                  name="totalIgst"
+                  placeholder="Total IGST"
+                  value={formData.totalIgst}
+                  readOnly
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
               </div>
