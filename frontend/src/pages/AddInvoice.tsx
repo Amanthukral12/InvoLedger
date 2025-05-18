@@ -175,8 +175,9 @@ const AddInvoice = () => {
     const totalIgst = invoiceItems.reduce((sum, item) => sum + item.igst, 0);
 
     const subTotal = itemsAmount + Number(formData.cartage);
-    const totalAmount =
-      subTotal + Number(totalSgst) + Number(totalCgst) + Number(totalIgst);
+    const totalAmount = Math.floor(
+      subTotal + Number(totalSgst) + Number(totalCgst) + Number(totalIgst)
+    );
     const amountInWords = inWords(totalAmount)?.toLocaleUpperCase() || "";
 
     setFormData((prev) => ({

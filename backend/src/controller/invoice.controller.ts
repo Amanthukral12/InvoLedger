@@ -170,13 +170,6 @@ export const updateInvoice = asyncHandler(
       amount,
       cartage,
       subTotal,
-      taxPercent,
-      sgstPercent,
-      cgstPercent,
-      igstPercent,
-      sgst,
-      cgst,
-      igst,
       totalAmount,
       totalAmountInWords,
       reverseCharge,
@@ -199,23 +192,19 @@ export const updateInvoice = asyncHandler(
       ]);
     }
 
+    const cleanedShipToPartyId = shipToPartyId === "" ? null : shipToPartyId;
+
     const updatedInvoice = await prisma.invoice.update({
       where: { id: invoiceExists.id, companyId: invoiceExists.companyId },
       data: {
         invoiceNumber: invoiceNumber !== undefined ? invoiceNumber : undefined,
         invoiceDate: invoiceDate !== undefined ? invoiceDate : undefined,
         clientId: clientId !== undefined ? clientId : undefined,
-        shipToPartyId: shipToPartyId !== undefined ? shipToPartyId : undefined,
+        shipToPartyId:
+          shipToPartyId !== undefined ? cleanedShipToPartyId : undefined,
         amount: amount !== undefined ? amount : undefined,
         cartage: cartage !== undefined ? cartage : undefined,
         subTotal: subTotal !== undefined ? subTotal : undefined,
-        taxPercent: taxPercent !== undefined ? taxPercent : undefined,
-        sgstPercent: sgstPercent !== undefined ? sgstPercent : undefined,
-        cgstPercent: cgstPercent !== undefined ? cgstPercent : undefined,
-        igstPercent: igstPercent !== undefined ? igstPercent : undefined,
-        sgst: sgst !== undefined ? sgst : undefined,
-        cgst: cgst !== undefined ? cgst : undefined,
-        igst: igst !== undefined ? igst : undefined,
         totalAmount: totalAmount !== undefined ? totalAmount : undefined,
         totalAmountInWords:
           totalAmountInWords !== undefined ? totalAmountInWords : undefined,
@@ -233,6 +222,13 @@ export const updateInvoice = asyncHandler(
                   unitPrice: item.unitPrice,
                   hsnCode: item.hsnCode,
                   amount: item.amount,
+                  taxPercent: item.taxPercent,
+                  sgstPercent: item.sgstPercent,
+                  cgstPercent: item.cgstPercent,
+                  igstPercent: item.igstPercent,
+                  sgst: item.sgst,
+                  cgst: item.cgst,
+                  igst: item.igst,
                 })),
               }
             : undefined,
