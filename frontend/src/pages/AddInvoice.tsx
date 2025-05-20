@@ -560,9 +560,7 @@ const AddInvoice = () => {
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
               </div>
-            </div>
-            <div className="w-full md:w-4/5 mx-auto flex mb-4">
-              <div className="flex flex-col mr-4 w-1/3 md:w-1/5">
+              <div className="flex flex-col">
                 <label
                   htmlFor="totalAmount"
                   className="mb-1 text-sm font-medium "
@@ -578,22 +576,22 @@ const AddInvoice = () => {
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
               </div>
-              <div className="flex flex-col w-2/3 md:w-4/5">
-                <label
-                  htmlFor="totalAmountInWords"
-                  className="mb-1 text-sm font-medium "
-                >
-                  Total Amount in Words
-                </label>
-                <input
-                  type="text"
-                  name="totalAmountInWords"
-                  placeholder="Total Amount in Words"
-                  value={formData.totalAmountInWords}
-                  readOnly
-                  className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
-                />
-              </div>
+            </div>
+            <div className="w-full md:w-4/5 mx-auto flex flex-col mb-4">
+              <label
+                htmlFor="totalAmountInWords"
+                className="mb-1 text-sm font-medium "
+              >
+                Total Amount in Words
+              </label>
+              <input
+                type="text"
+                name="totalAmountInWords"
+                placeholder="Total Amount in Words"
+                value={formData.totalAmountInWords}
+                readOnly
+                className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
+              />
             </div>
 
             <div className="w-full md:w-4/5 mx-auto relative mb-4">
