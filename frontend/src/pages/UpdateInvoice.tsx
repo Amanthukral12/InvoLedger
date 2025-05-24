@@ -230,7 +230,7 @@ const UpdateInvoice = () => {
     const totalCgst = invoiceItems.reduce((sum, item) => sum + item.cgst, 0);
     const totalIgst = invoiceItems.reduce((sum, item) => sum + item.igst, 0);
     const subTotal = itemsAmount + Number(formData.cartage);
-    const totalAmount = Math.floor(
+    const totalAmount = Math.round(
       subTotal + Number(totalSgst) + Number(totalCgst) + Number(totalIgst)
     );
 
