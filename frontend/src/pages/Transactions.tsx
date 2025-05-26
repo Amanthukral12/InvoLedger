@@ -11,6 +11,9 @@ import { MdDelete } from "react-icons/md";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useQuery } from "@tanstack/react-query";
+import api from "../utils/api";
+import ExportToExcel from "../components/ExportToExcel";
 
 const Transactions = () => {
   const [showSideBar, setShowSideBar] = useState(false);
@@ -22,6 +25,21 @@ const Transactions = () => {
     createTransactionMutation,
   } = useTransaction();
   const transactions = transactionQuery.data ?? [];
+
+  const { data: fetchedClient } = useQuery({
+    queryKey: ["client", clientId],
+    queryFn: async () => {
+      const { data } = await api.get(`/client/${clientId}`);
+      return data.data;
+    },
+    enabled: !!clientId,
+  });
+
+  const formattedData = transactions.map((txn: Transaction) => ({
+    Date: new Date(txn.date).toLocaleDateString(),
+    "DEBIT Amount": txn.type === "DEBIT" ? txn.amount : "",
+    "CREDIT Amount": txn.type === "CREDIT" ? txn.amount : "",
+  }));
 
   const [formData, setFormData] = useState<{
     date: Date;
@@ -106,6 +124,15 @@ const Transactions = () => {
         <div className="mx-3 mb-4">
           <div className="flex justify-between mb-4 mx-0 lg:mx-2">
             <h3 className="text-lg lg:text-2xl font-semibold mb-4">Ledger</h3>
+            <ExportToExcel
+              data={formattedData}
+              type="transactions"
+              balance={`Client Balance: ${fetchedClient?.balance}`}
+              headers={["Date", "DEBIT Amount", "CREDIT Amount"]}
+              title={`Client Name: ${fetchedClient?.name ?? ""}`}
+              clientName={fetchedClient?.name}
+              year={selectedYear}
+            />
           </div>
           <form
             className="w-full md:w-4/5 flex flex-col md:flex-row mb-4 justify-between p-2 md:mx-auto"
@@ -135,7 +162,7 @@ const Transactions = () => {
               <option value="CREDIT">CREDIT</option>
               <option value="DEBIT">DEBIT</option>
             </select>
-            <button className=" text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer block">
+            <button className="text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer block">
               Add
             </button>
           </form>
