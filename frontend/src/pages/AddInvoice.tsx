@@ -173,11 +173,36 @@ const AddInvoice = () => {
       (sum, item) => sum + item.amount,
       0
     );
-    const totalSgst = invoiceItems.reduce((sum, item) => sum + item.sgst, 0);
-    const totalCgst = invoiceItems.reduce((sum, item) => sum + item.cgst, 0);
-    const totalIgst = invoiceItems.reduce((sum, item) => sum + item.igst, 0);
+    let cartageTax = 0;
+    if (itemsAmount > 0) {
+      cartageTax = invoiceItems.reduce((sum, item) => {
+        const proportion = item.amount / itemsAmount;
+        return sum + formData.cartage * proportion * (item.taxPercent / 100);
+      }, 0);
+    }
+
+    const isSameState = clientState ? company?.state === clientState : false;
+
+    let cartageCgst = 0,
+      cartageSgst = 0,
+      cartageIgst = 0;
+
+    if (isSameState) {
+      cartageCgst = cartageTax / 2;
+      cartageSgst = cartageTax / 2;
+    } else {
+      cartageIgst = cartageTax;
+    }
 
     const subTotal = itemsAmount + Number(formData.cartage);
+
+    const totalSgst =
+      invoiceItems.reduce((sum, item) => sum + item.sgst, 0) + cartageSgst;
+    const totalCgst =
+      invoiceItems.reduce((sum, item) => sum + item.cgst, 0) + cartageCgst;
+    const totalIgst =
+      invoiceItems.reduce((sum, item) => sum + item.igst, 0) + cartageIgst;
+
     const totalAmount = Math.round(
       subTotal + Number(totalSgst) + Number(totalCgst) + Number(totalIgst)
     );
@@ -193,7 +218,7 @@ const AddInvoice = () => {
       totalAmount,
       totalAmountInWords: amountInWords,
     }));
-  }, [invoiceItems, formData.cartage]);
+  }, [invoiceItems, formData.cartage, clientState, company?.state]);
 
   useEffect(() => {
     if (invoiceItems.length > 0) {
