@@ -303,46 +303,36 @@ export const generateInvoicePdf = (
     .font("Helvetica")
     .text(`${invoiceData.amount}`, valueX, yPosition, { align: "right" });
 
-  if (invoiceData.cartage) {
-    doc.font("Helvetica").text(`Cartage:`, labelX, yPosition + 10);
-    doc
-      .font("Helvetica")
-      .text(`${invoiceData.cartage}`, valueX, yPosition + 10, {
-        align: "right",
-      });
-  }
+  doc.font("Helvetica").text(`Cartage:`, labelX, yPosition + 10);
+  doc.font("Helvetica").text(`${invoiceData.cartage}`, valueX, yPosition + 10, {
+    align: "right",
+  });
 
-  if (invoiceData.totalCgst) {
-    doc.font("Helvetica").text(`Total CGST:`, labelX, yPosition + 20);
-    doc.text(`${invoiceData.totalCgst}`, valueX, yPosition + 20, {
-      align: "right",
-    });
-  }
+  doc.font("Helvetica").text(`Total CGST:`, labelX, yPosition + 20);
+  doc.text(`${invoiceData.totalCgst}`, valueX, yPosition + 20, {
+    align: "right",
+  });
 
-  if (invoiceData.totalSgst) {
-    doc.font("Helvetica").text(`Total SGST:`, labelX, yPosition + 30);
-    doc.text(`${invoiceData.totalSgst}`, valueX, yPosition + 30, {
-      align: "right",
-    });
-  }
+  doc.font("Helvetica").text(`Total SGST:`, labelX, yPosition + 30);
+  doc.text(`${invoiceData.totalSgst}`, valueX, yPosition + 30, {
+    align: "right",
+  });
 
-  if (invoiceData.totalIgst) {
-    doc.font("Helvetica").text(`Total IGST:`, labelX, yPosition + 20);
-    doc.text(`${invoiceData.totalIgst}`, valueX, yPosition + 20, {
-      align: "right",
-    });
-  }
+  doc.font("Helvetica").text(`Total IGST:`, labelX, yPosition + 40);
+  doc.text(`${invoiceData.totalIgst}`, valueX, yPosition + 40, {
+    align: "right",
+  });
 
   doc
     .moveTo(labelX, doc.y)
-    .lineTo(valueX + 50, doc.y)
+    .lineTo(valueX + 60, doc.y)
     .stroke();
   doc.moveDown(1);
 
   doc
     .font("Helvetica-Bold")
-    .text("Total Amount:", labelX, yPosition + 50)
-    .text(`${invoiceData.totalAmount}`, valueX, yPosition + 50, {
+    .text("Total Amount:", labelX, yPosition + 60)
+    .text(`${invoiceData.totalAmount}`, valueX, yPosition + 60, {
       align: "right",
     });
 
