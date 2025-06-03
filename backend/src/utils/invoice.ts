@@ -26,12 +26,25 @@ export const generateInvoicePdf = (
   doc
     .fontSize(12)
     .font("Helvetica")
-    .text(`${invoiceData.company.Address}`, { align: "center" });
+    .text(
+      `${invoiceData.company.Address}`,
+      (doc.page.width - 400) / 2,
+      undefined,
+      {
+        width: 400,
+        align: "center",
+      }
+    );
+
+  doc.x = 30;
 
   doc
     .moveDown(0.5)
     .font("Helvetica-Bold")
-    .text(`GSTIN: ${invoiceData.company.GST}`, { align: "center" });
+    .text(`GSTIN: ${invoiceData.company.GST}`, {
+      align: "center",
+      indent: 0,
+    });
   doc
     .moveUp(0.5)
     .fontSize(10)
@@ -42,7 +55,7 @@ export const generateInvoicePdf = (
 
   doc
     .fillColor("lightblue")
-    .rect(0.1 * doc.page.width, yPosition, pageWidth, 25) // (x, y, width, height)
+    .rect(0.1 * doc.page.width, yPosition, pageWidth, 25)
     .fill();
 
   doc
@@ -111,6 +124,7 @@ export const generateInvoicePdf = (
   const centerX = pageWidth / 2 + 30;
   doc
     .font("Helvetica-Bold")
+    .fontSize(16)
     .text("Invoice Items", centerX, doc.y, { underline: true });
 
   doc.moveDown(1);
@@ -183,7 +197,7 @@ export const generateInvoicePdf = (
       align: "center",
     });
 
-  doc.moveDown(1);
+  doc.moveDown(1.5);
 
   doc
     .strokeColor("black")
@@ -303,23 +317,23 @@ export const generateInvoicePdf = (
     .font("Helvetica")
     .text(`${invoiceData.amount}`, valueX, yPosition, { align: "right" });
 
-  doc.font("Helvetica").text(`Cartage:`, labelX, yPosition + 10);
-  doc.font("Helvetica").text(`${invoiceData.cartage}`, valueX, yPosition + 10, {
+  doc.font("Helvetica").text(`Cartage:`, labelX, yPosition + 20);
+  doc.font("Helvetica").text(`${invoiceData.cartage}`, valueX, yPosition + 20, {
     align: "right",
   });
 
-  doc.font("Helvetica").text(`Total CGST:`, labelX, yPosition + 20);
-  doc.text(`${invoiceData.totalCgst}`, valueX, yPosition + 20, {
+  doc.font("Helvetica").text(`Total CGST:`, labelX, yPosition + 40);
+  doc.text(`${invoiceData.totalCgst}`, valueX, yPosition + 40, {
     align: "right",
   });
 
-  doc.font("Helvetica").text(`Total SGST:`, labelX, yPosition + 30);
-  doc.text(`${invoiceData.totalSgst}`, valueX, yPosition + 30, {
+  doc.font("Helvetica").text(`Total SGST:`, labelX, yPosition + 60);
+  doc.text(`${invoiceData.totalSgst}`, valueX, yPosition + 60, {
     align: "right",
   });
 
-  doc.font("Helvetica").text(`Total IGST:`, labelX, yPosition + 40);
-  doc.text(`${invoiceData.totalIgst}`, valueX, yPosition + 40, {
+  doc.font("Helvetica").text(`Total IGST:`, labelX, yPosition + 80);
+  doc.text(`${invoiceData.totalIgst}`, valueX, yPosition + 80, {
     align: "right",
   });
 
@@ -331,8 +345,8 @@ export const generateInvoicePdf = (
 
   doc
     .font("Helvetica-Bold")
-    .text("Total Amount:", labelX, yPosition + 60)
-    .text(`${invoiceData.totalAmount}`, valueX, yPosition + 60, {
+    .text("Total Amount:", labelX, yPosition + 100)
+    .text(`${invoiceData.totalAmount}`, valueX, yPosition + 100, {
       align: "right",
     });
 
@@ -353,7 +367,13 @@ export const generateInvoicePdf = (
     doc.moveDown(5);
   }
 
-  doc.text(`${invoiceData.company.name}`, 400, doc.y, { align: "right" });
-  doc.fontSize(10).text("Authorized Signatory", 400, doc.y, { align: "right" });
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(12)
+    .text(`${invoiceData.company.name}`, 400, doc.y, { align: "right" });
+  doc
+    .font("Helvetica")
+    .fontSize(10)
+    .text("Authorized Signatory", 400, doc.y + 80, { align: "right" });
   doc.end();
 };
