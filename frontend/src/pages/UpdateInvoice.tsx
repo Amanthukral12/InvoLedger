@@ -430,7 +430,7 @@ const UpdateInvoice = () => {
                         name="description"
                         value={item.description}
                         onChange={(e) => handleItemChange(index, e)}
-                        className="w-full p-1 border border-gray-300 mt-1"
+                        className="w-full p-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none mt-1"
                       />
                     </div>
                     <div className="mb-2">
@@ -440,7 +440,7 @@ const UpdateInvoice = () => {
                         name="hsnCode"
                         value={item.hsnCode}
                         onChange={(e) => handleItemChange(index, e)}
-                        className="w-full p-1 border border-gray-300 mt-1"
+                        className="w-full p-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none mt-1"
                       />
                     </div>
                     <div className="mb-2">
@@ -448,9 +448,18 @@ const UpdateInvoice = () => {
                       <input
                         type="number"
                         name="quantity"
+                        onFocus={(e) =>
+                          e.target.addEventListener(
+                            "wheel",
+                            function (e) {
+                              e.preventDefault();
+                            },
+                            { passive: false }
+                          )
+                        }
                         value={item.quantity}
                         onChange={(e) => handleItemChange(index, e)}
-                        className="w-full p-1 border border-gray-300 mt-1"
+                        className="w-full p-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none mt-1"
                       />
                     </div>
                     <div className="mb-2">
@@ -460,9 +469,18 @@ const UpdateInvoice = () => {
                       <input
                         type="number"
                         name="unitPrice"
+                        onFocus={(e) =>
+                          e.target.addEventListener(
+                            "wheel",
+                            function (e) {
+                              e.preventDefault();
+                            },
+                            { passive: false }
+                          )
+                        }
                         value={item.unitPrice}
                         onChange={(e) => handleItemChange(index, e)}
-                        className="w-full p-1 border border-gray-300 mt-1"
+                        className="w-full p-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none mt-1"
                       />
                     </div>
                     <div className="mb-2">
@@ -470,9 +488,18 @@ const UpdateInvoice = () => {
                       <input
                         type="number"
                         name="amount"
+                        onFocus={(e) =>
+                          e.target.addEventListener(
+                            "wheel",
+                            function (e) {
+                              e.preventDefault();
+                            },
+                            { passive: false }
+                          )
+                        }
                         value={item.amount}
                         readOnly
-                        className="w-full p-1 border bg-gray-100 cursor-not-allowed border-gray-300 mt-1"
+                        className="w-full p-1 border bg-gray-100 cursor-not-allowed border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none mt-1"
                       />
                     </div>
                     <div className="mb-2">
@@ -482,9 +509,18 @@ const UpdateInvoice = () => {
                       <input
                         type="number"
                         name="taxPercent"
+                        onFocus={(e) =>
+                          e.target.addEventListener(
+                            "wheel",
+                            function (e) {
+                              e.preventDefault();
+                            },
+                            { passive: false }
+                          )
+                        }
                         value={item.taxPercent}
                         onChange={(e) => handleItemChange(index, e)}
-                        className="w-full p-1 border border-gray-300 mt-1"
+                        className="w-full p-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none mt-1"
                       />
                     </div>
                     <div className="mb-2">
@@ -494,9 +530,18 @@ const UpdateInvoice = () => {
                       <input
                         type="number"
                         name="sgstPercent"
+                        onFocus={(e) =>
+                          e.target.addEventListener(
+                            "wheel",
+                            function (e) {
+                              e.preventDefault();
+                            },
+                            { passive: false }
+                          )
+                        }
                         value={item.sgstPercent}
                         readOnly
-                        className="w-full p-1 border bg-gray-100 cursor-not-allowed border-gray-300 mt-1"
+                        className="w-full p-1 border bg-gray-100 cursor-not-allowed border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none mt-1"
                       />
                     </div>
                     <div className="mb-2">
@@ -506,9 +551,18 @@ const UpdateInvoice = () => {
                       <input
                         type="number"
                         name="cgstPercent"
+                        onFocus={(e) =>
+                          e.target.addEventListener(
+                            "wheel",
+                            function (e) {
+                              e.preventDefault();
+                            },
+                            { passive: false }
+                          )
+                        }
                         value={item.cgstPercent}
                         readOnly
-                        className="w-full p-1 border bg-gray-100 cursor-not-allowed border-gray-300 mt-1"
+                        className="w-full p-1 border bg-gray-100 cursor-not-allowed border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none mt-1"
                       />
                     </div>
                     <div className="mb-2">
@@ -518,9 +572,18 @@ const UpdateInvoice = () => {
                       <input
                         type="number"
                         name="igstPercent"
+                        onFocus={(e) =>
+                          e.target.addEventListener(
+                            "wheel",
+                            function (e) {
+                              e.preventDefault();
+                            },
+                            { passive: false }
+                          )
+                        }
                         value={item.igstPercent}
                         readOnly
-                        className="w-full p-1 border bg-gray-100 cursor-not-allowed border-gray-300 mt-1"
+                        className="w-full p-1 border bg-gray-100 cursor-not-allowed border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none mt-1"
                       />
                     </div>
                     <button
@@ -551,6 +614,15 @@ const UpdateInvoice = () => {
                   type="number"
                   id="amount"
                   name="amount"
+                  onFocus={(e) =>
+                    e.target.addEventListener(
+                      "wheel",
+                      function (e) {
+                        e.preventDefault();
+                      },
+                      { passive: false }
+                    )
+                  }
                   placeholder="Amount"
                   readOnly
                   value={formData.amount}
@@ -566,6 +638,15 @@ const UpdateInvoice = () => {
                   type="number"
                   id="cartage"
                   name="cartage"
+                  onFocus={(e) =>
+                    e.target.addEventListener(
+                      "wheel",
+                      function (e) {
+                        e.preventDefault();
+                      },
+                      { passive: false }
+                    )
+                  }
                   placeholder="Cartage"
                   value={Number(formData.cartage)}
                   onChange={handleChange}
@@ -581,9 +662,18 @@ const UpdateInvoice = () => {
                   type="number"
                   id="subTotal"
                   name="subTotal"
+                  onFocus={(e) =>
+                    e.target.addEventListener(
+                      "wheel",
+                      function (e) {
+                        e.preventDefault();
+                      },
+                      { passive: false }
+                    )
+                  }
                   placeholder="Sub Total"
                   value={formData.subTotal}
-                  onChange={handleChange}
+                  readOnly
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
               </div>
@@ -598,6 +688,15 @@ const UpdateInvoice = () => {
                   type="number"
                   id="totalCgst"
                   name="totalCgst"
+                  onFocus={(e) =>
+                    e.target.addEventListener(
+                      "wheel",
+                      function (e) {
+                        e.preventDefault();
+                      },
+                      { passive: false }
+                    )
+                  }
                   placeholder="Total CGST"
                   value={formData.totalCgst}
                   readOnly
@@ -615,6 +714,15 @@ const UpdateInvoice = () => {
                   type="number"
                   id="totalSgst"
                   name="totalSgst"
+                  onFocus={(e) =>
+                    e.target.addEventListener(
+                      "wheel",
+                      function (e) {
+                        e.preventDefault();
+                      },
+                      { passive: false }
+                    )
+                  }
                   placeholder="Total SGST"
                   value={formData.totalSgst}
                   readOnly
@@ -632,6 +740,15 @@ const UpdateInvoice = () => {
                   type="number"
                   id="totalIgst"
                   name="totalIgst"
+                  onFocus={(e) =>
+                    e.target.addEventListener(
+                      "wheel",
+                      function (e) {
+                        e.preventDefault();
+                      },
+                      { passive: false }
+                    )
+                  }
                   placeholder="Total IGST"
                   value={formData.totalIgst}
                   readOnly
@@ -648,6 +765,15 @@ const UpdateInvoice = () => {
                 <input
                   type="number"
                   name="totalAmount"
+                  onFocus={(e) =>
+                    e.target.addEventListener(
+                      "wheel",
+                      function (e) {
+                        e.preventDefault();
+                      },
+                      { passive: false }
+                    )
+                  }
                   placeholder="Total Amount"
                   value={formData.totalAmount}
                   readOnly
@@ -695,7 +821,6 @@ const UpdateInvoice = () => {
                   type="input"
                   placeholder="Transport Mode"
                   name="transportMode"
-                  required
                   value={formData.transportMode}
                   onChange={handleChange}
                   className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base md:text-sm"
@@ -707,7 +832,6 @@ const UpdateInvoice = () => {
                   type="input"
                   placeholder="Vehicle Number"
                   name="vehicleNumber"
-                  required
                   value={formData.vehicleNumber}
                   onChange={handleChange}
                   className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base md:text-sm"

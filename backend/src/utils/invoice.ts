@@ -84,12 +84,16 @@ export const generateInvoicePdf = (
     doc.y
   );
   doc.y = yPosition;
-  doc.text(`Transport Mode: ${invoiceData.transportMode}`, 350, yPosition);
-  doc.text(
-    `Vehicle Number: ${invoiceData.vehicleNumber.toUpperCase()}`,
-    350,
-    doc.y
-  );
+  if (invoiceData.transportMode) {
+    doc.text(`Transport Mode: ${invoiceData.transportMode}`, 350, yPosition);
+  }
+  if (invoiceData.vehicleNumber) {
+    doc.text(
+      `Vehicle Number: ${invoiceData.vehicleNumber.toUpperCase()}`,
+      350,
+      doc.y
+    );
+  }
   doc.text(`Place of Supply: ${invoiceData.placeOfSupply}`, 350, doc.y);
 
   doc.moveDown(1);
