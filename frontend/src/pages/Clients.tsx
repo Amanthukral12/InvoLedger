@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useClient } from "../hooks/client";
 import CompanyHeader from "../components/UI/CompanyHeader";
 import NavigationBar from "../components/UI/NavigationBar";
@@ -10,13 +10,16 @@ import { FaRegEdit } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import useClientStore from "../store/clientstore";
 import axios from "axios";
+import { debounce } from "../utils/debounce";
 
 const Clients = () => {
+  const [userInput, setUserInput] = useState("");
+  const [searchedClients, setSearchedClients] = useState([]);
   const { clientQuery, deleteClientMutation } = useClient();
   const setSelectedClient = useClientStore((state) => state.setSelectedClient);
   const [showSideBar, setShowSideBar] = useState(false);
   const navigate = useNavigate();
-  const clients = clientQuery.data ?? [];
+  const clients = useMemo(() => clientQuery.data ?? [], [clientQuery.data]);
   const deleteHandler = async (id: string) => {
     try {
       await deleteClientMutation.mutateAsync(id);
@@ -28,6 +31,25 @@ const Clients = () => {
       }
     }
   };
+
+  const fetchClients = (query: string) => {
+    const filteredClients = clients.filter((client: Client) =>
+      client.name.toLowerCase().includes(query.toLowerCase())
+    );
+    setSearchedClients(filteredClients);
+  };
+
+  const debouncedFetchClients = useCallback(debounce(fetchClients, 500), [
+    clients,
+  ]);
+
+  useEffect(() => {
+    if (userInput.trim() === "") {
+      setSearchedClients(clients);
+    } else {
+      debouncedFetchClients(userInput);
+    }
+  }, [userInput, clients, debouncedFetchClients]);
 
   return (
     <div className="bg-[#edf7fd] bg-cover min-h-screen lg:h-screen overflow-hidden flex flex-col lg:flex-row w-full text-main">
@@ -54,8 +76,17 @@ const Clients = () => {
               </button>
             </Link>
           </div>
+          <div className="w-[90%] mx-auto">
+            <input
+              type="text"
+              placeholder="Search Clients"
+              className="w-full p-2 border-1 bg-white  rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none mt-1 mb-4"
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+            />
+          </div>
           <div className="w-[90%] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-6">
-            {clients?.map((client: Client) => {
+            {searchedClients?.map((client: Client) => {
               return (
                 <Link
                   to={`/companyClients/${client.id}`}
