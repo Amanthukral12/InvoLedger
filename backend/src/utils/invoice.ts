@@ -23,15 +23,17 @@ export const generateInvoicePdf = (
     .text(`${invoiceData.company.name}`, { align: "center" });
   doc.fontSize(10).font("Helvetica").text(`${copyName}`, { align: "right" });
 
+  doc.moveDown(0.5);
+
   doc
     .fontSize(12)
     .font("Helvetica")
     .text(
       `${invoiceData.company.Address}`,
-      (doc.page.width - 400) / 2,
+      (doc.page.width - 250) / 2,
       undefined,
       {
-        width: 400,
+        width: 250,
         align: "center",
       }
     );
@@ -96,7 +98,12 @@ export const generateInvoicePdf = (
   }
   doc.text(`Place of Supply: ${invoiceData.placeOfSupply}`, 350, doc.y);
 
-  doc.moveDown(1);
+  if (invoiceData.transportMode && invoiceData.vehicleNumber) {
+    doc.moveDown(1);
+  } else {
+    doc.moveDown(3);
+  }
+
   yPosition = doc.y;
 
   doc.font("Helvetica-Bold").text("Bill to Party", 50, yPosition);
@@ -125,7 +132,7 @@ export const generateInvoicePdf = (
   }
   doc.moveDown(2);
 
-  const centerX = pageWidth / 2 + 30;
+  const centerX = (pageWidth + 30) / 2;
   doc
     .font("Helvetica-Bold")
     .fontSize(16)
@@ -309,7 +316,9 @@ export const generateInvoicePdf = (
   yPosition = doc.y;
 
   doc.font("Helvetica-Bold").text("Total Amount in Words:", 50, yPosition);
-  doc.font("Helvetica").text(invoiceData.totalAmountInWords, 50, doc.y);
+  doc
+    .font("Helvetica")
+    .text(invoiceData.totalAmountInWords, 50, doc.y, { width: 250 });
 
   const labelX = 400;
   const valueX = 520;
