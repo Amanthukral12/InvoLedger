@@ -6,6 +6,8 @@ interface InvoiceState {
   selectedYear: number;
   currentPage: number;
   pageSize: number;
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
   selectedInvoice: Invoice | null;
   setMonth: (month: number) => void;
   setYear: (year: number) => void;
@@ -20,6 +22,8 @@ const useInvoiceStore = create<InvoiceState>()((set) => ({
   selectedYear: new Date().getFullYear(),
   currentPage: 1,
   pageSize: 6,
+  searchTerm: "",
+  setSearchTerm: (term) => set({ searchTerm: term }),
   setMonth: (month) => set({ selectedMonth: month, currentPage: 1 }),
   setYear: (year) => set({ selectedYear: year, currentPage: 1 }),
   setCurrentPage: (page) => set({ currentPage: page }),

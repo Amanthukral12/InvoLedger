@@ -3,7 +3,7 @@ import CompanyHeader from "../components/UI/CompanyHeader";
 import NavigationBar from "../components/UI/NavigationBar";
 import Sidebar from "../components/UI/Sidebar";
 import { useInvoice } from "../hooks/invoices";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useInvoiceStore from "../store/invoiceStore";
 import { CustomInvoiceData } from "../types/types";
@@ -13,8 +13,10 @@ import { MdDelete } from "react-icons/md";
 import { monthNames } from "../constants/months";
 import axios from "axios";
 import Loading from "../components/UI/Loading";
+import { debounce } from "../utils/debounce";
 const Invoices = () => {
   const [showSideBar, setShowSideBar] = useState(false);
+
   const {
     selectedYear,
     selectedMonth,
@@ -23,10 +25,13 @@ const Invoices = () => {
     currentPage,
     pageSize,
     setCurrentPage,
+    searchTerm,
+    setSearchTerm,
   } = useInvoiceStore();
   const { invoiceQuery, deleteInvoiceMutation, generateInvoiceMutation } =
     useInvoice();
   const [invoiceType, setInvoiceType] = useState("ORIGINAL");
+  const [inputValue, setInputValue] = useState(searchTerm);
   const data = invoiceQuery.data;
   const invoices = data?.invoices ?? [];
   const totalCount = data?.totalCount ?? 0;
@@ -63,6 +68,17 @@ const Invoices = () => {
     });
   };
 
+  const debouncedSetSearchTerm = useCallback(
+    debounce((value: string) => {
+      setSearchTerm(value);
+    }, 500),
+    []
+  );
+
+  useEffect(() => {
+    debouncedSetSearchTerm(inputValue);
+  }, [inputValue, debouncedSetSearchTerm]);
+
   if (invoiceQuery.isLoading) {
     return <Loading />;
   }
@@ -95,6 +111,15 @@ const Invoices = () => {
                 Add New Invoice
               </button>
             </Link>
+          </div>
+          <div className="w-[90%] mx-auto">
+            <input
+              type="text"
+              placeholder="Search Invoices..."
+              className="w-full p-2 border-1 bg-white  rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none mt-1 mb-4"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+            />
           </div>
           <div className="flex justify-center mb-3">
             <select

@@ -7,11 +7,18 @@ import { toast } from "react-toastify";
 export const useInvoice = () => {
   const queryClient = useQueryClient();
 
-  const { selectedMonth, selectedYear, currentPage, pageSize } =
+  const { selectedMonth, selectedYear, currentPage, pageSize, searchTerm } =
     useInvoiceStore();
 
   const invoiceQuery = useQuery({
-    queryKey: ["invoice", selectedMonth, selectedYear, currentPage, pageSize],
+    queryKey: [
+      "invoice",
+      selectedMonth,
+      selectedYear,
+      currentPage,
+      pageSize,
+      searchTerm,
+    ],
     queryFn: async () => {
       const { data } = await api.get("/invoice", {
         params: {
@@ -19,6 +26,7 @@ export const useInvoice = () => {
           year: selectedYear,
           page: currentPage,
           limit: pageSize,
+          searchTerm: searchTerm,
         },
       });
       return data.data;

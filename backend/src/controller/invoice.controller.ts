@@ -302,26 +302,46 @@ export const getAllInvoicesForCompany = asyncHandler(
       limit = 6,
       month = currentMonth,
       year = currentYear,
+      searchTerm,
     } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
 
-    let dateFilter = {};
+    let where: any = {
+      companyId,
+    };
 
-    if (month && year) {
+    if (searchTerm) {
+      const term = String(searchTerm).toLowerCase();
+      where = {
+        ...where,
+        OR: [
+          {
+            invoiceNumber: {
+              contains: term,
+              mode: "insensitive",
+            },
+          },
+          {
+            client: {
+              name: {
+                contains: term,
+                mode: "insensitive",
+              },
+            },
+          },
+        ],
+      };
+    } else if (month && year) {
       const startDate = new Date(Number(year), Number(month) - 1, 1);
       const endDate = new Date(Number(year), Number(month), 1);
-      dateFilter = {
+      where = {
+        ...where,
         invoiceDate: {
           gte: startDate,
           lt: endDate,
         },
       };
     }
-
-    const where = {
-      companyId,
-      ...dateFilter,
-    };
 
     const [totalCount, invoices] = await Promise.all([
       prisma.invoice.count({ where }),
