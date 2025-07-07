@@ -79,17 +79,28 @@ const DashBoard = () => {
               <div className="flex flex-col items-center lg:flex-row lg:justify-between mx-3 font-medium text-lg">
                 <p>
                   Total Amount:{" "}
-                  {companyInvoicesSummary?.total?._sum.totalAmount}
+                  {companyInvoicesSummary?.total?._sum.totalAmount
+                    ? companyInvoicesSummary?.total?._sum.totalAmount
+                    : 0}
                 </p>
-                <p>Total Tax: {totalTax}</p>
+                <p>Total Tax: {totalTax ? totalTax : 0}</p>
                 <p>
-                  Total CGST: {companyInvoicesSummary?.total?._sum.totalCgst}
+                  Total CGST:{" "}
+                  {companyInvoicesSummary?.total?._sum.totalCgst
+                    ? companyInvoicesSummary?.total?._sum.totalCgst
+                    : 0}
                 </p>
                 <p>
-                  Total SGST: {companyInvoicesSummary?.total?._sum.totalSgst}
+                  Total SGST:{" "}
+                  {companyInvoicesSummary?.total?._sum.totalSgst
+                    ? companyInvoicesSummary?.total?._sum.totalSgst
+                    : 0}
                 </p>
                 <p>
-                  Total IGST: {companyInvoicesSummary?.total?._sum.totalIgst}
+                  Total IGST:{" "}
+                  {companyInvoicesSummary?.total?._sum.totalIgst
+                    ? companyInvoicesSummary?.total?._sum.totalIgst
+                    : 0}
                 </p>
               </div>
             )}
