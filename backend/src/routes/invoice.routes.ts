@@ -7,6 +7,7 @@ import {
   getAllInvoicesForCompany,
   getInvoiceById,
   getInvoiceCount,
+  getInvoicesSummary,
   updateInvoice,
 } from "../controller/invoice.controller";
 
@@ -14,6 +15,7 @@ const router = Router();
 
 router.route("/add").post(authenticateSession, createInvoice);
 router.route("/getInvoicesCount").get(authenticateSession, getInvoiceCount);
+router.route("/invoicesSummary").get(authenticateSession, getInvoicesSummary);
 router.route("/").get(authenticateSession, getAllInvoicesForCompany);
 router
   .route("/generate-invoice/:id")

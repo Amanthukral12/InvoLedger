@@ -45,6 +45,19 @@ export const useInvoice = () => {
       return data.data;
     },
   });
+
+  const invoicesSummary = useQuery({
+    queryKey: ["invoicesSummary", selectedMonth, selectedYear],
+    queryFn: async () => {
+      const { data } = await api.get("/invoice/invoicesSummary", {
+        params: {
+          month: selectedMonth,
+          year: selectedYear,
+        },
+      });
+      return data.data;
+    },
+  });
   const createInvoiceMutation = useMutation<
     Invoice,
     Error,
@@ -194,5 +207,6 @@ export const useInvoice = () => {
     deleteInvoiceMutation,
     generateInvoiceMutation,
     invoiceCountQuery,
+    invoicesSummary,
   };
 };

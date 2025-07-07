@@ -7,11 +7,18 @@ import useInvoiceStore from "../store/invoiceStore";
 import { Link } from "react-router-dom";
 import { useInvoice } from "../hooks/invoices";
 import BarChartComponent from "../components/UI/BarChart";
+import { monthNames } from "../constants/months";
 const DashBoard = () => {
   const [showSideBar, setShowSideBar] = useState(false);
-  const { selectedYear, setYear } = useInvoiceStore();
-  const { invoiceCountQuery } = useInvoice();
+  const { selectedYear, setYear, selectedMonth, setMonth } = useInvoiceStore();
+  const { invoiceCountQuery, invoicesSummary } = useInvoice();
   const data = invoiceCountQuery.data;
+  const companyInvoicesSummary = invoicesSummary.data;
+
+  const totalTax =
+    companyInvoicesSummary?.total?._sum.totalCgst +
+    companyInvoicesSummary?.total?._sum.totalSgst +
+    companyInvoicesSummary?.total?._sum.totalIgst;
   return (
     <div className="bg-[#edf7fd] bg-cover min-h-screen lg:h-screen overflow-hidden flex flex-col lg:flex-row w-full text-main">
       <div className="w-0 lg:w-1/5 z-5">
@@ -43,6 +50,17 @@ const DashBoard = () => {
           <div className="flex justify-center mb-3">
             <select
               className=" mr-3 bg-white p-2 rounded-lg text-lg font-medium focus:border-none focus:outline-none"
+              onChange={(e) => setMonth(Number(e.target.value))}
+              value={selectedMonth}
+            >
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                <option key={month} value={month}>
+                  {monthNames[month - 1]}
+                </option>
+              ))}
+            </select>
+            <select
+              className=" mr-3 bg-white p-2 rounded-lg text-lg font-medium focus:border-none focus:outline-none"
               onChange={(e) => setYear(Number(e.target.value))}
               value={selectedYear}
             >
@@ -55,6 +73,26 @@ const DashBoard = () => {
                 </option>
               ))}
             </select>
+          </div>
+          <div className="my-4">
+            {companyInvoicesSummary?.total?._sum && (
+              <div className="flex flex-col items-center lg:flex-row lg:justify-between mx-3 font-medium text-lg">
+                <p>
+                  Total Amount:{" "}
+                  {companyInvoicesSummary?.total?._sum.totalAmount}
+                </p>
+                <p>Total Tax: {totalTax}</p>
+                <p>
+                  Total CGST: {companyInvoicesSummary?.total?._sum.totalCgst}
+                </p>
+                <p>
+                  Total SGST: {companyInvoicesSummary?.total?._sum.totalSgst}
+                </p>
+                <p>
+                  Total IGST: {companyInvoicesSummary?.total?._sum.totalIgst}
+                </p>
+              </div>
+            )}
           </div>
           <div className="mb-16 -ml-6">
             {data && data.monthlyCount && (
