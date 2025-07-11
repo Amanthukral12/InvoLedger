@@ -5,6 +5,7 @@ import {
   deleteInvoice,
   generateInvoice,
   getAllInvoicesForCompany,
+  getAllInvoicesForMonthForCompany,
   getInvoiceById,
   getInvoiceCount,
   getInvoicesSummary,
@@ -16,6 +17,9 @@ const router = Router();
 router.route("/add").post(authenticateSession, createInvoice);
 router.route("/getInvoicesCount").get(authenticateSession, getInvoiceCount);
 router.route("/invoicesSummary").get(authenticateSession, getInvoicesSummary);
+router
+  .route("/invoicesformonthcompany")
+  .get(authenticateSession, getAllInvoicesForMonthForCompany);
 router.route("/").get(authenticateSession, getAllInvoicesForCompany);
 router
   .route("/generate-invoice/:id")
