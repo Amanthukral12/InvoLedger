@@ -14,6 +14,7 @@ import { monthNames } from "../constants/months";
 import axios from "axios";
 import Loading from "../components/UI/Loading";
 import { debounce } from "../utils/debounce";
+import { generateExcel } from "../utils/generateExcel";
 const Invoices = () => {
   const [showSideBar, setShowSideBar] = useState(false);
 
@@ -28,11 +29,16 @@ const Invoices = () => {
     searchTerm,
     setSearchTerm,
   } = useInvoiceStore();
-  const { invoiceQuery, deleteInvoiceMutation, generateInvoiceMutation } =
-    useInvoice();
+  const {
+    invoiceQuery,
+    deleteInvoiceMutation,
+    generateInvoiceMutation,
+    invoicesForMonthCompany,
+  } = useInvoice();
   const [invoiceType, setInvoiceType] = useState("ORIGINAL");
   const [inputValue, setInputValue] = useState(searchTerm);
   const data = invoiceQuery.data;
+  const invoicesForCompany = invoicesForMonthCompany.data?.invoicesData ?? [];
   const invoices = data?.invoices ?? [];
   const totalCount = data?.totalCount ?? 0;
   const navigate = useNavigate();
@@ -66,6 +72,20 @@ const Invoices = () => {
       clientName,
       invoiceType,
     });
+  };
+
+  const handleExcelExport = async () => {
+    if (!invoicesForCompany || invoicesForCompany.length === 0) {
+      alert("No invoices data available for export");
+      return;
+    }
+
+    try {
+      await generateExcel(invoicesForCompany);
+    } catch (error) {
+      console.error("Error generating Excel:", error);
+      alert("Error generating Excel file");
+    }
   };
 
   const debouncedSetSearchTerm = useCallback(
@@ -147,6 +167,21 @@ const Invoices = () => {
                 </option>
               ))}
             </select>
+          </div>
+          <div className="w-full flex justify-end">
+            <button
+              onClick={handleExcelExport}
+              className="text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
+              disabled={
+                invoicesForMonthCompany.isLoading ||
+                !invoicesForCompany ||
+                invoicesForCompany.length === 0
+              }
+            >
+              {invoicesForMonthCompany.isLoading
+                ? "Loading..."
+                : "Export to Excel"}
+            </button>
           </div>
           {totalCount !== 0 && (
             <p className="text-lg font-semibold">Total {totalCount} Invoices</p>

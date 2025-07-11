@@ -17,6 +17,7 @@ import axios from "axios";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { roundCurrency } from "../utils/roundCurrency";
 const AddInvoice = () => {
   const [showSideBar, setShowSideBar] = useState(false);
   const [clientState, setClientState] = useState("");
@@ -179,6 +180,7 @@ const AddInvoice = () => {
         const proportion = item.amount / itemsAmount;
         return sum + formData.cartage * proportion * (item.taxPercent / 100);
       }, 0);
+      cartageTax = roundCurrency(cartageTax);
     }
 
     const isSameState = clientState ? company?.state === clientState : false;
@@ -552,7 +554,7 @@ const AddInvoice = () => {
               </button>
             </div>
 
-            <div className="w-full md:w-4/5 mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
+            <div className="w-full md:w-4/5 mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
               <div className="flex flex-col">
                 <label htmlFor="amount" className="mb-1 text-sm font-medium ">
                   Amount

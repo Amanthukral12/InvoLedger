@@ -19,6 +19,7 @@ import { IoIosAddCircleOutline } from "react-icons/io";
 import axios from "axios";
 import { useInvoice } from "../hooks/invoices";
 import Loading from "../components/UI/Loading";
+import { roundCurrency } from "../utils/roundCurrency";
 
 const UpdateInvoice = () => {
   const { id } = useParams();
@@ -232,6 +233,7 @@ const UpdateInvoice = () => {
         const proportion = item.amount / itemsAmount;
         return sum + formData.cartage * proportion * (item.taxPercent / 100);
       }, 0);
+      cartageTax = roundCurrency(cartageTax);
     }
 
     const isSameState = clientState ? company?.state === clientState : false;
@@ -605,7 +607,7 @@ const UpdateInvoice = () => {
               </button>
             </div>
 
-            <div className="w-full md:w-4/5 mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
+            <div className="w-full md:w-4/5 mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
               <div className="flex flex-col">
                 <label htmlFor="amount" className="mb-1 text-sm font-medium ">
                   Amount

@@ -57,6 +57,21 @@ export const useInvoice = () => {
       });
       return data.data;
     },
+    enabled: !!selectedMonth && !!selectedYear,
+    refetchOnWindowFocus: false,
+  });
+
+  const invoicesForMonthCompany = useQuery({
+    queryKey: ["invoicesForMonthCompany", selectedMonth, selectedYear],
+    queryFn: async () => {
+      const { data } = await api.get("/invoice/invoicesformonthcompany", {
+        params: {
+          month: selectedMonth,
+          year: selectedYear,
+        },
+      });
+      return data.data;
+    },
   });
   const createInvoiceMutation = useMutation<
     Invoice,
@@ -208,5 +223,6 @@ export const useInvoice = () => {
     generateInvoiceMutation,
     invoiceCountQuery,
     invoicesSummary,
+    invoicesForMonthCompany,
   };
 };
