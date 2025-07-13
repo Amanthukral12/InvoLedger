@@ -1,4 +1,3 @@
-import ExcelJS from "exceljs";
 import { Invoice } from "../types/types";
 import { monthNames } from "../constants/months";
 export const generateExcel = async (
@@ -7,6 +6,7 @@ export const generateExcel = async (
   selectedYear: number,
   companyName: string
 ) => {
+  const ExcelJS = await import("exceljs");
   const workbook = new ExcelJS.Workbook();
 
   const worksheet = workbook.addWorksheet("Invoices Data");

@@ -3,7 +3,8 @@ import react from "@vitejs/plugin-react-swc";
 import tailwindcss from "@tailwindcss/vite";
 import svgr from "vite-plugin-svgr";
 import { VitePWA, VitePWAOptions } from "vite-plugin-pwa";
-
+import { visualizer } from "rollup-plugin-visualizer";
+import { compression } from "vite-plugin-compression2";
 const manifestForPlugin: Partial<VitePWAOptions> = {
   registerType: "autoUpdate",
   manifest: {
@@ -31,16 +32,42 @@ const manifestForPlugin: Partial<VitePWAOptions> = {
       },
     ],
   },
+  workbox: {
+    maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+  },
 };
+
 export default defineConfig({
   server: {
     proxy: {
       "/auth": {
-        target: "http://localhost:8000", // Backend URL
+        target: "http://localhost:8000",
         changeOrigin: true,
         secure: false,
       },
     },
   },
-  plugins: [react(), VitePWA(manifestForPlugin), tailwindcss(), svgr()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            return id
+              .toString()
+              .split("node_modules/")[1]
+              .split("/")[0]
+              .toString();
+          }
+        },
+      },
+    },
+  },
+  plugins: [
+    react(),
+    VitePWA(manifestForPlugin),
+    tailwindcss(),
+    svgr(),
+    visualizer({ open: true }),
+    compression({ algorithms: ["brotliCompress"] }),
+  ],
 });

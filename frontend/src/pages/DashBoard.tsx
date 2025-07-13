@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import NavigationBar from "../components/UI/NavigationBar";
 import Sidebar from "../components/UI/Sidebar";
 import { IoMenu } from "react-icons/io5";
@@ -6,10 +6,12 @@ import CompanyHeader from "../components/UI/CompanyHeader";
 import useInvoiceStore from "../store/invoiceStore";
 import { Link } from "react-router-dom";
 import { useInvoice } from "../hooks/invoices";
-import BarChartComponent from "../components/UI/BarChart";
 import { monthNames } from "../constants/months";
 import { generateExcel } from "../utils/generateExcel";
 import { useAuth } from "../hooks/auth";
+
+const BarChartComponent = lazy(() => import("../components/UI/BarChart"));
+
 const DashBoard = () => {
   const [showSideBar, setShowSideBar] = useState(false);
   const { selectedYear, setYear, selectedMonth, setMonth } = useInvoiceStore();
@@ -145,9 +147,11 @@ const DashBoard = () => {
             )}
           </div>
           <div className="mb-16 -ml-6">
-            {data && data.monthlyCount && (
-              <BarChartComponent data={data.monthlyCount} />
-            )}
+            <Suspense fallback={<div>Loading Chart...</div>}>
+              {data && data.monthlyCount && (
+                <BarChartComponent data={data.monthlyCount} />
+              )}
+            </Suspense>
           </div>
         </div>
       </section>
