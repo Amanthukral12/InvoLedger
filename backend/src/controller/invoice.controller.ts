@@ -532,47 +532,33 @@ export const getAllInvoicesForMonthForCompany = asyncHandler(
       };
     }
 
-    const [invoicesSummary, invoicesData] = await Promise.all([
-      prisma.invoice.aggregate({
-        _sum: {
-          totalAmount: true,
-          totalCgst: true,
-          totalSgst: true,
-          totalIgst: true,
-        },
-        where,
-      }),
-      prisma.invoice.findMany({
-        where,
-        select: {
-          invoiceNumber: true,
-          invoiceDate: true,
-          totalAmount: true,
-          amount: true,
-          cartage: true,
-          totalCgst: true,
-          totalSgst: true,
-          totalIgst: true,
-          client: {
-            select: {
-              name: true,
-            },
+    const invoicesData = await prisma.invoice.findMany({
+      where,
+      select: {
+        invoiceNumber: true,
+        invoiceDate: true,
+        totalAmount: true,
+        amount: true,
+        cartage: true,
+        totalCgst: true,
+        totalSgst: true,
+        totalIgst: true,
+        client: {
+          select: {
+            name: true,
           },
-          invoiceItems: true,
         },
-        orderBy: {
-          invoiceDate: "asc",
-        },
-      }),
-    ]);
+        invoiceItems: true,
+      },
+      orderBy: {
+        invoiceDate: "asc",
+      },
+    });
+
     return res
       .status(200)
       .json(
-        new ApiResponse(
-          200,
-          { invoicesSummary, invoicesData },
-          "Invoices fetched successfully"
-        )
+        new ApiResponse(200, { invoicesData }, "Invoices fetched successfully")
       );
   }
 );

@@ -1,6 +1,12 @@
 import ExcelJS from "exceljs";
 import { Invoice } from "../types/types";
-export const generateExcel = async (invoicesData: Invoice[]) => {
+import { monthNames } from "../constants/months";
+export const generateExcel = async (
+  invoicesData: Invoice[],
+  selectedMonth: number,
+  selectedYear: number,
+  companyName: string
+) => {
   const workbook = new ExcelJS.Workbook();
 
   const worksheet = workbook.addWorksheet("Invoices Data");
@@ -20,6 +26,10 @@ export const generateExcel = async (invoicesData: Invoice[]) => {
     { header: "Unit Price", key: "unitPrice", width: 10 },
     { header: "HSN Code", key: "hsnCode", width: 10 },
     { header: "Item Amount", key: "itemAmount", width: 12 },
+    { header: "Item Tax Percent", key: "taxPercent", width: 20 },
+    { header: "Item CGST Percent", key: "itemCgstPercent", width: 20 },
+    { header: "Item SGST Percent", key: "itemSgstPercent", width: 20 },
+    { header: "Item IGST Percent", key: "itemIgstPercent", width: 20 },
     { header: "Item CGST", key: "itemCgst", width: 10 },
     { header: "Item SGST", key: "itemSgst", width: 10 },
     { header: "Item IGST", key: "itemIgst", width: 10 },
@@ -27,22 +37,27 @@ export const generateExcel = async (invoicesData: Invoice[]) => {
 
   // Fill data
   invoicesData.forEach((invoice) => {
-    invoice.invoiceItems.forEach((item) => {
+    invoice.invoiceItems.forEach((item, index) => {
       worksheet.addRow({
-        invoiceNumber: invoice.invoiceNumber,
-        invoiceDate: new Date(invoice.invoiceDate).toLocaleDateString(),
-        clientName: invoice.client.name,
-        totalAmount: invoice.totalAmount,
-        amount: invoice.amount,
-        cartage: invoice.cartage,
-        totalCgst: invoice.totalCgst,
-        totalSgst: invoice.totalSgst,
-        totalIgst: invoice.totalIgst,
+        invoiceNumber: index === 0 ? invoice.invoiceNumber : "",
+        invoiceDate:
+          index === 0 ? new Date(invoice.invoiceDate).toLocaleDateString() : "",
+        clientName: index === 0 ? invoice.client.name : "",
+        totalAmount: index === 0 ? invoice.totalAmount : "",
+        amount: index === 0 ? invoice.amount : "",
+        cartage: index === 0 ? invoice.cartage : "",
+        totalCgst: index === 0 ? invoice.totalCgst : "",
+        totalSgst: index === 0 ? invoice.totalSgst : "",
+        totalIgst: index === 0 ? invoice.totalIgst : "",
         description: item.description,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
         hsnCode: item.hsnCode,
         itemAmount: item.amount,
+        taxPercent: item.taxPercent,
+        itemCgstPercent: item.cgstPercent,
+        itemSgstPercent: item.sgstPercent,
+        itemIgstPercent: item.igstPercent,
         itemCgst: item.cgst,
         itemSgst: item.sgst,
         itemIgst: item.igst,
@@ -108,7 +123,9 @@ export const generateExcel = async (invoicesData: Invoice[]) => {
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `invoices-summary.xlsx`;
+  a.download = `${companyName}-${
+    monthNames[selectedMonth - 1]
+  }-${selectedYear}-invoices-summary.xlsx`;
   a.click();
   window.URL.revokeObjectURL(url);
 };

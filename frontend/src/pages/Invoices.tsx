@@ -15,6 +15,7 @@ import axios from "axios";
 import Loading from "../components/UI/Loading";
 import { debounce } from "../utils/debounce";
 import { generateExcel } from "../utils/generateExcel";
+import { useAuth } from "../hooks/auth";
 const Invoices = () => {
   const [showSideBar, setShowSideBar] = useState(false);
 
@@ -29,6 +30,7 @@ const Invoices = () => {
     searchTerm,
     setSearchTerm,
   } = useInvoiceStore();
+  const { company } = useAuth();
   const {
     invoiceQuery,
     deleteInvoiceMutation,
@@ -39,6 +41,7 @@ const Invoices = () => {
   const [inputValue, setInputValue] = useState(searchTerm);
   const data = invoiceQuery.data;
   const invoicesForCompany = invoicesForMonthCompany.data?.invoicesData ?? [];
+  const companyName = company?.name ?? "";
   const invoices = data?.invoices ?? [];
   const totalCount = data?.totalCount ?? 0;
   const navigate = useNavigate();
@@ -81,7 +84,12 @@ const Invoices = () => {
     }
 
     try {
-      await generateExcel(invoicesForCompany);
+      await generateExcel(
+        invoicesForCompany,
+        selectedMonth,
+        selectedYear,
+        companyName
+      );
     } catch (error) {
       console.error("Error generating Excel:", error);
       alert("Error generating Excel file");
