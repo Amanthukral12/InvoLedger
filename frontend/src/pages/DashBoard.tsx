@@ -9,14 +9,17 @@ import { useInvoice } from "../hooks/invoices";
 import BarChartComponent from "../components/UI/BarChart";
 import { monthNames } from "../constants/months";
 import { generateExcel } from "../utils/generateExcel";
+import { useAuth } from "../hooks/auth";
 const DashBoard = () => {
   const [showSideBar, setShowSideBar] = useState(false);
   const { selectedYear, setYear, selectedMonth, setMonth } = useInvoiceStore();
+  const { company } = useAuth();
   const { invoiceCountQuery, invoicesSummary, invoicesForMonthCompany } =
     useInvoice();
   const data = invoiceCountQuery.data;
   const companyInvoicesSummary = invoicesSummary.data;
   const invoicesForCompany = invoicesForMonthCompany.data?.invoicesData ?? [];
+  const companyName = company?.name ?? "";
   const handleExcelExport = async () => {
     if (!invoicesForCompany || invoicesForCompany.length === 0) {
       alert("No invoices data available for export");
@@ -24,7 +27,12 @@ const DashBoard = () => {
     }
 
     try {
-      await generateExcel(invoicesForCompany);
+      await generateExcel(
+        invoicesForCompany,
+        selectedMonth,
+        selectedYear,
+        companyName
+      );
     } catch (error) {
       console.error("Error generating Excel:", error);
       alert("Error generating Excel file");
