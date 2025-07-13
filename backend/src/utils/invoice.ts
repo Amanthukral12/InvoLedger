@@ -145,30 +145,27 @@ export const generateInvoicePdf = (
 
   const columnPositions = {
     serialNo: 50,
-    description: 80,
-    hsnCode: 160,
-    quantity: 190,
-    rate: 240,
-    amount: 270,
-    sgstPercent: 330,
-    cgstPercent: 370,
-    igstPercent: 410,
-    sgst: 450,
-    cgst: 490,
-    igst: 530,
+    description: 100,
+    hsnCode: 220,
+    quantity: 260,
+    rate: 310,
+    amount: 340,
+    sgst: 410,
+    cgst: 460,
+    igst: 510,
   };
 
   doc
     .text("Serial No.", columnPositions.serialNo, tableStartY, {
-      width: 30,
+      width: 50,
       align: "left",
     })
     .text("Product Description", columnPositions.description, tableStartY, {
-      width: 80,
+      width: 120,
       align: "left",
     })
     .text("HSN Code", columnPositions.hsnCode, tableStartY, {
-      width: 30,
+      width: 40,
       align: "center",
     })
     .text("Quantity", columnPositions.quantity, tableStartY, {
@@ -180,31 +177,19 @@ export const generateInvoicePdf = (
       align: "center",
     })
     .text("Amount", columnPositions.amount, tableStartY, {
-      width: 60,
-      align: "center",
-    })
-    .text("Sgst %", columnPositions.sgstPercent, tableStartY, {
-      width: 40,
-      align: "center",
-    })
-    .text("Cgst %", columnPositions.cgstPercent, tableStartY, {
-      width: 40,
-      align: "center",
-    })
-    .text("Igst %", columnPositions.igstPercent, tableStartY, {
-      width: 40,
+      width: 70,
       align: "center",
     })
     .text("SGST", columnPositions.sgst, tableStartY, {
-      width: 40,
+      width: 50,
       align: "center",
     })
     .text("CGST", columnPositions.cgst, tableStartY, {
-      width: 40,
+      width: 50,
       align: "center",
     })
     .text("IGST", columnPositions.igst, tableStartY, {
-      width: 40,
+      width: 50,
       align: "center",
     });
 
@@ -223,15 +208,15 @@ export const generateInvoicePdf = (
     doc
       .font("Helvetica")
       .text(`${index + 1}`, columnPositions.serialNo, rowY, {
-        width: 30,
+        width: 50,
         align: "left",
       })
       .text(item.description, columnPositions.description, rowY, {
-        width: 80,
+        width: 120,
         align: "left",
       })
       .text(item.hsnCode, columnPositions.hsnCode, rowY, {
-        width: 30,
+        width: 40,
         align: "center",
       })
       .text(item.quantity.toString(), columnPositions.quantity, rowY, {
@@ -243,67 +228,65 @@ export const generateInvoicePdf = (
         align: "center",
       })
       .text(item.amount.toFixed(2), columnPositions.amount, rowY, {
-        width: 60,
+        width: 70,
         align: "center",
       })
       .text(
-        item.sgstPercent ? item.sgstPercent.toString() : "0",
-        columnPositions.sgstPercent,
-        rowY,
-        {
-          width: 40,
-          align: "center",
-        }
-      )
-      .text(
-        item.cgstPercent ? item.cgstPercent.toString() : "0",
-        columnPositions.cgstPercent,
-        rowY,
-        {
-          width: 40,
-          align: "center",
-        }
-      )
-      .text(
-        item.igstPercent ? item.igstPercent.toString() : "0",
-        columnPositions.igstPercent,
-        rowY,
-        {
-          width: 40,
-          align: "center",
-        }
-      )
-      .text(
-        item.sgst ? item.sgst.toString() : "0",
+        item.sgst ? item.sgst.toFixed(2).toString() : "0",
         columnPositions.sgst,
         rowY,
         {
-          width: 40,
+          width: 50,
           align: "center",
         }
       )
       .text(
-        item.cgst ? item.cgst.toString() : "0",
+        item.sgstPercent !== null ? `(${item.sgstPercent.toString()}%)` : "(0)",
+        columnPositions.sgst,
+        rowY + 15,
+        {
+          width: 50,
+          align: "center",
+        }
+      )
+      .text(
+        item.cgst ? item.cgst.toFixed(2).toString() : "0",
         columnPositions.cgst,
         rowY,
         {
-          width: 40,
+          width: 50,
           align: "center",
         }
       )
       .text(
-        item.igst ? item.igst.toString() : "0",
+        item.cgstPercent !== null ? `(${item.cgstPercent.toString()}%)` : "(0)",
+        columnPositions.cgst,
+        rowY + 15,
+        {
+          width: 50,
+          align: "center",
+        }
+      )
+      .text(
+        item.igst ? item.igst.toFixed(2).toString() : "0",
         columnPositions.igst,
         rowY,
         {
-          width: 40,
+          width: 50,
+          align: "center",
+        }
+      )
+      .text(
+        item.igstPercent !== null ? `(${item.igstPercent.toString()}%)` : "(0)",
+        columnPositions.igst,
+        rowY + 15,
+        {
+          width: 50,
           align: "center",
         }
       );
-
-    doc.moveDown(0.5);
   });
-
+  doc.moveDown(0.5);
   doc
     .strokeColor("black")
     .lineWidth(1)
@@ -352,7 +335,7 @@ export const generateInvoicePdf = (
 
   doc
     .moveTo(labelX, doc.y)
-    .lineTo(valueX + 60, doc.y)
+    .lineTo(valueX + 50, doc.y)
     .stroke();
   doc.moveDown(1);
 
@@ -387,6 +370,6 @@ export const generateInvoicePdf = (
   doc
     .font("Helvetica")
     .fontSize(10)
-    .text("Authorized Signatory", 400, doc.y + 80, { align: "right" });
+    .text("Authorized Signatory", 400, doc.y + 50, { align: "right" });
   doc.end();
 };

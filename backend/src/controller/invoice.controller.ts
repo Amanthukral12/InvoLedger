@@ -501,3 +501,64 @@ export const getInvoicesSummary = asyncHandler(
     );
   }
 );
+
+export const getAllInvoicesForMonthForCompany = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.company) {
+      throw new ApiError(401, "Unauthorized Access. Please login again", [
+        "Unauthorized Access. Please login again",
+      ]);
+    }
+    const companyId = req.company.id;
+
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+    const { month = currentMonth, year = currentYear } = req.query;
+
+    let where: any = {
+      companyId: Number(companyId),
+    };
+
+    if (month && year) {
+      const startDate = new Date(Number(year), Number(month) - 1, 1);
+      const endDate = new Date(Number(year), Number(month), 1);
+
+      where = {
+        ...where,
+        invoiceDate: {
+          gte: startDate,
+          lt: endDate,
+        },
+      };
+    }
+
+    const invoicesData = await prisma.invoice.findMany({
+      where,
+      select: {
+        invoiceNumber: true,
+        invoiceDate: true,
+        totalAmount: true,
+        amount: true,
+        cartage: true,
+        totalCgst: true,
+        totalSgst: true,
+        totalIgst: true,
+        client: {
+          select: {
+            name: true,
+          },
+        },
+        invoiceItems: true,
+      },
+      orderBy: {
+        invoiceDate: "asc",
+      },
+    });
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200, { invoicesData }, "Invoices fetched successfully")
+      );
+  }
+);

@@ -8,12 +8,28 @@ import { Link } from "react-router-dom";
 import { useInvoice } from "../hooks/invoices";
 import BarChartComponent from "../components/UI/BarChart";
 import { monthNames } from "../constants/months";
+import { generateExcel } from "../utils/generateExcel";
 const DashBoard = () => {
   const [showSideBar, setShowSideBar] = useState(false);
   const { selectedYear, setYear, selectedMonth, setMonth } = useInvoiceStore();
-  const { invoiceCountQuery, invoicesSummary } = useInvoice();
+  const { invoiceCountQuery, invoicesSummary, invoicesForMonthCompany } =
+    useInvoice();
   const data = invoiceCountQuery.data;
   const companyInvoicesSummary = invoicesSummary.data;
+  const invoicesForCompany = invoicesForMonthCompany.data?.invoicesData ?? [];
+  const handleExcelExport = async () => {
+    if (!invoicesForCompany || invoicesForCompany.length === 0) {
+      alert("No invoices data available for export");
+      return;
+    }
+
+    try {
+      await generateExcel(invoicesForCompany);
+    } catch (error) {
+      console.error("Error generating Excel:", error);
+      alert("Error generating Excel file");
+    }
+  };
 
   const totalTax =
     companyInvoicesSummary?.total?._sum.totalCgst +
@@ -73,6 +89,21 @@ const DashBoard = () => {
                 </option>
               ))}
             </select>
+          </div>
+          <div className="flex justify-end mx-3">
+            <button
+              onClick={handleExcelExport}
+              className="text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
+              disabled={
+                invoicesForMonthCompany.isLoading ||
+                !invoicesForCompany ||
+                invoicesForCompany.length === 0
+              }
+            >
+              {invoicesForMonthCompany.isLoading
+                ? "Loading..."
+                : "Export to Excel"}
+            </button>
           </div>
           <div className="my-4">
             {companyInvoicesSummary?.total?._sum && (
