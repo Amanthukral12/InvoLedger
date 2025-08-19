@@ -33,6 +33,7 @@ model Company {
   clients                  Client[]
   invoices                 Invoice[]
   shipToParty              ShipToParty[]
+  purchases                Purchase[]
 }
 
 model Session {
@@ -63,6 +64,7 @@ model Client {
   company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
   invoices     Invoice[]
   transactions Transaction[]
+  Purchase     Purchase[]
 
   @@unique([companyId, GSTIN])
 }
@@ -151,6 +153,30 @@ model Transaction {
   updatedAt   DateTime        @updatedAt
 
   @@index([clientId])
+}
+
+model Purchase {
+  id            String   @id @default(uuid())
+  invoiceNumber String
+  companyId     Int
+  clientId      String
+  item          String
+  quantity      Int
+  unitPrice     Float
+  hsnCode       String
+  amount        Float
+  cartage       Float
+  taxPercent    Float
+  totalAmount   Float
+  totalGST      Float
+  totalIGST     Float
+  totalCGST     Float
+  totalSGST     Float
+  invoiceDate   DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  client        Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
 
 enum TransactionType {
