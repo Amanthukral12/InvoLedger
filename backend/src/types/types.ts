@@ -102,6 +102,24 @@ export interface InvoiceItem {
   igst: number | null;
 }
 
+export interface PurchaseItem {
+  id: string;
+  invoiceId: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  unit: string;
+  hsnCode: string;
+  amount: number;
+  taxPercent: number | null;
+  sgstPercent: number | null;
+  cgstPercent: number | null;
+  igstPercent: number | null;
+  sgst: number | null;
+  cgst: number | null;
+  igst: number | null;
+}
+
 export interface GoogleStrategyOptions {
   clientID: string;
   clientSecret: string;
