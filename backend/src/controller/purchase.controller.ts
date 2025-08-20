@@ -278,3 +278,147 @@ export const getPurchaseById = asyncHandler(
       .json(new ApiResponse(200, purchase, "Purchase retrieved successfully"));
   }
 );
+
+export const getAllPurchasesForCompany = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.company) {
+      throw new ApiError(401, "Unauthorized Access. Please login again", [
+        "Unauthorized Access. Please login again",
+      ]);
+    }
+    const companyId = req.company.id;
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+    const {
+      page = 1,
+      limit = 6,
+      month = currentMonth,
+      year = currentYear,
+      searchTerm,
+    } = req.query;
+
+    const offset = (Number(page) - 1) * Number(limit);
+
+    let where: any = {
+      companyId,
+    };
+
+    if (searchTerm) {
+      const term = String(searchTerm).toLowerCase();
+      where = {
+        ...where,
+        OR: [
+          {
+            invoiceNumber: {
+              contains: term,
+              mode: "insensitive",
+            },
+          },
+          {
+            client: {
+              name: {
+                contains: term,
+                mode: "insensitive",
+              },
+            },
+          },
+        ],
+      };
+    } else if (month && year) {
+      const startDate = new Date(Number(year), Number(month) - 1, 1);
+      const endDate = new Date(Number(year), Number(month), 1);
+      where = {
+        ...where,
+        invoiceDate: {
+          gte: startDate,
+          lt: endDate,
+        },
+      };
+    }
+
+    const [totalCount, purchases] = await Promise.all([
+      prisma.purchase.count({ where }),
+      prisma.purchase.findMany({
+        where,
+        select: {
+          invoiceNumber: true,
+          invoiceDate: true,
+          id: true,
+          client: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        skip: Number(offset),
+        take: Number(limit),
+        orderBy: {
+          invoiceDate: "desc",
+        },
+      }),
+    ]);
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          purchases,
+          totalCount,
+          currentPage: Number(page),
+          pageSize: Number(limit),
+        },
+        "Purchases fetched successfully"
+      )
+    );
+  }
+);
+
+export const getPurchasesSummary = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.company) {
+      throw new ApiError(401, "Unauthorized Access. Please login again", [
+        "Unauthorized Access. Please login again",
+      ]);
+    }
+    const companyId = req.company.id;
+
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+    const { month = currentMonth, year = currentYear } = req.query;
+
+    let where: any = {
+      companyId: Number(companyId),
+    };
+
+    if (month && year) {
+      const startDate = new Date(Number(year), Number(month) - 1, 1);
+      const endDate = new Date(Number(year), Number(month), 1);
+
+      where = {
+        ...where,
+        invoiceDate: {
+          gte: startDate,
+          lt: endDate,
+        },
+      };
+    }
+
+    const total = await prisma.purchase.aggregate({
+      _sum: {
+        totalAmount: true,
+        totalCGST: true,
+        totalSGST: true,
+        totalIGST: true,
+      },
+      where,
+    });
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          total,
+        },
+        "Purchases Summary fetched successfully"
+      )
+    );
+  }
+);
