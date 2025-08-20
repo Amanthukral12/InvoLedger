@@ -83,6 +83,23 @@ export interface InvoiceItem {
   cgst: number | null;
   igst: number | null;
 }
+export interface PurchaseItem {
+  id: string;
+  invoiceId: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  unit: string;
+  hsnCode: string;
+  amount: number;
+  taxPercent: number | null;
+  sgstPercent: number | null;
+  cgstPercent: number | null;
+  igstPercent: number | null;
+  sgst: number | null;
+  cgst: number | null;
+  igst: number | null;
+}
 
 export interface Invoice {
   id: string;
@@ -107,6 +124,24 @@ export interface Invoice {
   client: Client;
   shipToParty: Transporter | null;
   invoiceItems: InvoiceItem[];
+}
+export interface Purchase {
+  id: string;
+  invoiceNumber: string;
+  invoiceDate: Date;
+  companyId: number;
+  clientId: string;
+  amount: number;
+  cartage: number | null;
+  subTotal: number;
+  totalIgst: number | null;
+  totalCgst: number | null;
+  totalSgst: number | null;
+  totalAmount: number;
+  totalAmountInWords: string;
+  company: Company;
+  client: Client;
+  purchaseItems: PurchaseItem[];
 }
 
 export interface CustomInvoiceData {
