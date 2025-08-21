@@ -5,7 +5,6 @@ import Sidebar from "../components/UI/Sidebar";
 import { usePurchase } from "../hooks/purchases";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import usePurchaseStore from "../store/purchaseStore";
 import { CustomPurchaseData } from "../types/types";
 import { format } from "date-fns";
 import { FaRegEdit } from "react-icons/fa";
@@ -16,6 +15,7 @@ import Loading from "../components/UI/Loading";
 import { debounce } from "../utils/debounce";
 import { useAuth } from "../hooks/auth";
 import { generateExcelForPurchase } from "../utils/generateExcelForPurchase";
+import { useFilterStore } from "../store/filterStore";
 const Purchases = () => {
   const [showSideBar, setShowSideBar] = useState(false);
 
@@ -29,7 +29,7 @@ const Purchases = () => {
     setCurrentPage,
     searchTerm,
     setSearchTerm,
-  } = usePurchaseStore();
+  } = useFilterStore();
   const { company } = useAuth();
   const { purchaseQuery, deletePurchaseMutation, purchasesForMonthCompany } =
     usePurchase();

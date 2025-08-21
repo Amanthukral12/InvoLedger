@@ -1,14 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "../utils/api";
-import useInvoiceStore from "../store/invoiceStore";
 import { Invoice } from "../types/types";
 import { toast } from "react-toastify";
+import { useFilterStore } from "../store/filterStore";
 
 export const useInvoice = () => {
   const queryClient = useQueryClient();
 
   const { selectedMonth, selectedYear, currentPage, pageSize, searchTerm } =
-    useInvoiceStore();
+    useFilterStore();
 
   const invoiceQuery = useQuery({
     queryKey: [

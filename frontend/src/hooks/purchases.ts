@@ -1,14 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import usePurchaseStore from "../store/purchaseStore";
 import api from "../utils/api";
 import { Purchase } from "../types/types";
 import { toast } from "react-toastify";
+import { useFilterStore } from "../store/filterStore";
 
 export const usePurchase = () => {
   const queryClient = useQueryClient();
 
   const { selectedMonth, selectedYear, currentPage, pageSize, searchTerm } =
-    usePurchaseStore();
+    useFilterStore();
   const purchaseQuery = useQuery({
     queryKey: [
       "purchase",

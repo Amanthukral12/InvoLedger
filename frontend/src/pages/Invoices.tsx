@@ -5,7 +5,6 @@ import Sidebar from "../components/UI/Sidebar";
 import { useInvoice } from "../hooks/invoices";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import useInvoiceStore from "../store/invoiceStore";
 import { CustomInvoiceData } from "../types/types";
 import { format } from "date-fns";
 import { FaRegEdit } from "react-icons/fa";
@@ -16,6 +15,7 @@ import Loading from "../components/UI/Loading";
 import { debounce } from "../utils/debounce";
 import { generateExcel } from "../utils/generateExcel";
 import { useAuth } from "../hooks/auth";
+import { useFilterStore } from "../store/filterStore";
 const Invoices = () => {
   const [showSideBar, setShowSideBar] = useState(false);
 
@@ -29,7 +29,7 @@ const Invoices = () => {
     setCurrentPage,
     searchTerm,
     setSearchTerm,
-  } = useInvoiceStore();
+  } = useFilterStore();
   const { company } = useAuth();
   const {
     invoiceQuery,
