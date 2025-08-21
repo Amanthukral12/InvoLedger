@@ -200,8 +200,6 @@ export const getAllPurchasesForMonthForCompany = asyncHandler(
     const currentYear = new Date().getFullYear();
     const { month = currentMonth, year = currentYear } = req.query;
 
-    console.log(month, year);
-
     let where: any = {
       companyId: Number(companyId),
     };
