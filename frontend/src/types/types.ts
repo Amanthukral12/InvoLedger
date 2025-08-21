@@ -147,7 +147,15 @@ export interface Purchase {
 export interface CustomInvoiceData {
   id: string;
   invoiceDate: string;
-  invoiceNumber: 1;
+  invoiceNumber: number;
+  client: {
+    name: string;
+  };
+}
+export interface CustomPurchaseData {
+  id: string;
+  invoiceDate: string;
+  invoiceNumber: number;
   client: {
     name: string;
   };
