@@ -1,32 +1,43 @@
+import { useQuery } from "@tanstack/react-query";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import api from "../utils/api";
+import { inWords } from "../utils/numToWords";
+import useAuthStore from "../store/authStore";
+import { useClient } from "../hooks/client";
+import NavigationBar from "../components/UI/NavigationBar";
 import { IoMenu } from "react-icons/io5";
 import Sidebar from "../components/UI/Sidebar";
-import NavigationBar from "../components/UI/NavigationBar";
-import React, { useEffect, useState } from "react";
 import { CiUser } from "react-icons/ci";
-import { useClient } from "../hooks/client";
-import { Client } from "../types/types";
+import { format } from "date-fns";
+import { Client, Purchase } from "../types/types";
 import { MdDelete } from "react-icons/md";
 import { IoIosAddCircleOutline } from "react-icons/io";
-import useAuthStore from "../store/authStore";
-import { inWords } from "../utils/numToWords";
-import { usePurchase } from "../hooks/purchases";
 import axios from "axios";
-import { format } from "date-fns";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { usePurchase } from "../hooks/purchases";
+import Loading from "../components/UI/Loading";
 import { roundCurrency } from "../utils/roundCurrency";
-const AddPurchase = () => {
+
+const UpdatePurchase = () => {
+  const { id } = useParams();
   const [showSideBar, setShowSideBar] = useState(false);
   const [clientState, setClientState] = useState("");
   const navigate = useNavigate();
   const { company } = useAuthStore();
-  const { createPurchaseMutation } = usePurchase();
   const { clientQuery } = useClient();
-
   const clients = React.useMemo(
     () => clientQuery.data ?? [],
     [clientQuery.data]
   );
+  const { updatePurchaseMutation } = usePurchase();
+  const { data: fetchedPurchase, isLoading } = useQuery<Purchase>({
+    queryKey: ["purchase", id],
+    queryFn: async () => {
+      const { data } = await api.get(`/purchase/${id}`);
+      return data.data;
+    },
+    enabled: !!id,
+  });
 
   const [formData, setFormData] = useState({
     invoiceNumber: "",
@@ -36,13 +47,12 @@ const AddPurchase = () => {
     cartage: 0,
     subTotal: 0,
     totalGST: 0,
-    totalIGST: 0,
     totalCGST: 0,
+    totalIGST: 0,
     totalSGST: 0,
     totalAmount: 0,
     totalAmountInWords: "",
   });
-
   const [purchaseItems, setPurchaseItems] = useState([
     {
       id: Date.now().toString(),
@@ -63,28 +73,51 @@ const AddPurchase = () => {
     },
   ]);
 
-  const addItem = () => {
-    setPurchaseItems([
-      ...purchaseItems,
-      {
-        id: Date.now().toString(),
-        invoiceId: "",
-        description: "",
-        quantity: 0,
-        unitPrice: 0,
-        unit: "",
-        hsnCode: "",
-        amount: 0,
-        taxPercent: 0,
-        sgstPercent: 0,
-        cgstPercent: 0,
-        igstPercent: 0,
-        sgst: 0,
-        cgst: 0,
-        igst: 0,
-      },
-    ]);
-  };
+  useEffect(() => {
+    if (fetchedPurchase) {
+      setFormData({
+        invoiceNumber: fetchedPurchase.invoiceNumber || "",
+        invoiceDate: fetchedPurchase.invoiceDate
+          ? new Date(fetchedPurchase.invoiceDate)
+          : new Date(),
+        clientId: fetchedPurchase.clientId || "",
+
+        amount: fetchedPurchase.amount || 0,
+        cartage: fetchedPurchase.cartage || 0,
+        subTotal: fetchedPurchase.subTotal || 0,
+        totalGST: fetchedPurchase.totalGST || 0,
+        totalCGST: fetchedPurchase.totalCGST || 0,
+        totalSGST: fetchedPurchase.totalSGST || 0,
+        totalIGST: fetchedPurchase.totalIGST || 0,
+        totalAmount: fetchedPurchase.totalAmount || 0,
+        totalAmountInWords: fetchedPurchase.totalAmountInWords || "",
+      });
+      setPurchaseItems(
+        (fetchedPurchase.purchaseItems || []).map((item) => ({
+          ...item,
+          taxPercent: item.taxPercent || 0,
+          sgstPercent: item.sgstPercent || 0,
+          cgstPercent: item.cgstPercent || 0,
+          igstPercent: item.igstPercent || 0,
+          sgst: item.sgst || 0,
+          cgst: item.cgst || 0,
+          igst: item.igst || 0,
+          quantity: item.quantity || 0,
+          unitPrice: item.unitPrice || 0,
+          amount: item.amount || 0,
+        }))
+      );
+    }
+  }, [fetchedPurchase]);
+
+  useEffect(() => {
+    const selectedClient = clients.find(
+      (client: Client) => client.id === formData.clientId
+    );
+    if (selectedClient) {
+      setClientState(selectedClient.state);
+    }
+  }, [formData.clientId, clients]);
 
   const handleItemChange = (
     index: number,
@@ -141,6 +174,29 @@ const AddPurchase = () => {
     });
   };
 
+  const addItem = () => {
+    setPurchaseItems([
+      ...purchaseItems,
+      {
+        id: Date.now().toString(),
+        invoiceId: "",
+        description: "",
+        quantity: 0,
+        unitPrice: 0,
+        unit: "",
+        hsnCode: "",
+        amount: 0,
+        taxPercent: 0,
+        sgstPercent: 0,
+        cgstPercent: 0,
+        igstPercent: 0,
+        sgst: 0,
+        cgst: 0,
+        igst: 0,
+      },
+    ]);
+  };
+
   const removeItem = (index: number) => {
     const updatedItems = [...purchaseItems];
     updatedItems.splice(index, 1);
@@ -152,14 +208,6 @@ const AddPurchase = () => {
   ) => {
     const { name, value } = e.target;
 
-    if (name === "clientId") {
-      const selectedClient = clients.find(
-        (client: Client) => client.id === value
-      );
-      if (selectedClient) {
-        setClientState(selectedClient.state);
-      }
-    }
     const numericFields = ["cartage"];
     setFormData((prev) => ({
       ...prev,
@@ -193,7 +241,6 @@ const AddPurchase = () => {
     } else {
       cartageIgst = cartageTax;
     }
-
     const subTotal = itemsAmount + Number(formData.cartage);
 
     const totalSGST = parseFloat(
@@ -217,6 +264,7 @@ const AddPurchase = () => {
     const totalAmount = Math.round(
       subTotal + Number(totalSGST) + Number(totalCGST) + Number(totalIGST)
     );
+
     const amountInWords = inWords(totalAmount)?.toLocaleUpperCase() || "";
 
     setFormData((prev) => ({
@@ -274,18 +322,17 @@ const AddPurchase = () => {
     };
     try {
       e.preventDefault();
-      await createPurchaseMutation.mutateAsync(finalPurchase);
+      await updatePurchaseMutation.mutateAsync({ id, formData: finalPurchase });
       navigate("/companyPurchases");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
-        toast.error(error.response?.data.message);
       } else {
         console.error("Unexpected error:", error);
       }
     }
   };
-
+  if (isLoading) return <Loading />;
   return (
     <div className="bg-[#edf7fd] bg-cover min-h-screen overflow-hidden lg:h-screen flex flex-col lg:flex-row w-full text-main">
       <div className=" w-0 lg:w-1/5 z-5">
@@ -302,9 +349,7 @@ const AddPurchase = () => {
       <Sidebar shown={showSideBar} close={() => setShowSideBar(!showSideBar)} />
       <section className="w-full lg:w-4/5 overflow-y-auto min-h-screen mb-16 flex justify-center items-start">
         <div className="w-[90%] bg-white shadow-md rounded-lg py-3 mb-4 mt-10 flex flex-col items-center px-1 md:px-0">
-          <h1 className="font-bold text-3xl m-3  text-main">
-            Add New Purchase
-          </h1>
+          <h1 className="font-bold text-3xl m-3  text-main">Update Purchase</h1>
           <form className="w-full" onSubmit={handleSubmit}>
             <div className="w-full md:w-4/5 mx-auto flex">
               <div className="w-full md:w-4/5 mx-auto relative mb-4 mr-4">
@@ -324,7 +369,7 @@ const AddPurchase = () => {
                 <input
                   type="date"
                   placeholder="Invoice Date"
-                  name="InvoiceDate"
+                  name="invoiceDate"
                   required
                   value={format(new Date(formData.invoiceDate), "yyyy-MM-dd")}
                   onChange={handleChange}
@@ -350,9 +395,9 @@ const AddPurchase = () => {
                 ))}
               </select>
             </div>
-
             <div className="w-full md:w-4/5 mx-auto relative mb-4">
               <h3 className="text-2xl font-medium mb-2">Purchase Items</h3>
+
               <div className="flex flex-col gap-4">
                 {purchaseItems.map((item, index) => (
                   <div
@@ -584,6 +629,8 @@ const AddPurchase = () => {
                 </label>
                 <input
                   type="number"
+                  id="cartage"
+                  name="cartage"
                   onFocus={(e) =>
                     e.target.addEventListener(
                       "wheel",
@@ -593,8 +640,6 @@ const AddPurchase = () => {
                       { passive: false }
                     )
                   }
-                  id="cartage"
-                  name="cartage"
                   placeholder="Cartage"
                   value={Number(formData.cartage)}
                   onChange={handleChange}
@@ -608,6 +653,8 @@ const AddPurchase = () => {
                 </label>
                 <input
                   type="number"
+                  id="subTotal"
+                  name="subTotal"
                   onFocus={(e) =>
                     e.target.addEventListener(
                       "wheel",
@@ -617,8 +664,6 @@ const AddPurchase = () => {
                       { passive: false }
                     )
                   }
-                  id="subTotal"
-                  name="subTotal"
                   placeholder="Sub Total"
                   value={formData.subTotal}
                   readOnly
@@ -634,6 +679,8 @@ const AddPurchase = () => {
                 </label>
                 <input
                   type="number"
+                  id="totalCGST"
+                  name="totalCGST"
                   onFocus={(e) =>
                     e.target.addEventListener(
                       "wheel",
@@ -643,8 +690,6 @@ const AddPurchase = () => {
                       { passive: false }
                     )
                   }
-                  id="totalCgst"
-                  name="totalCGST"
                   placeholder="Total CGST"
                   value={formData.totalCGST}
                   readOnly
@@ -660,6 +705,8 @@ const AddPurchase = () => {
                 </label>
                 <input
                   type="number"
+                  id="totalSGST"
+                  name="totalSGST"
                   onFocus={(e) =>
                     e.target.addEventListener(
                       "wheel",
@@ -669,8 +716,6 @@ const AddPurchase = () => {
                       { passive: false }
                     )
                   }
-                  id="totalSGST"
-                  name="totalSGST"
                   placeholder="Total SGST"
                   value={formData.totalSGST}
                   readOnly
@@ -686,6 +731,8 @@ const AddPurchase = () => {
                 </label>
                 <input
                   type="number"
+                  id="totalIGST"
+                  name="totalIGST"
                   onFocus={(e) =>
                     e.target.addEventListener(
                       "wheel",
@@ -695,8 +742,6 @@ const AddPurchase = () => {
                       { passive: false }
                     )
                   }
-                  id="totalIGST"
-                  name="totalIGST"
                   placeholder="Total IGST"
                   value={formData.totalIGST}
                   readOnly
@@ -712,6 +757,7 @@ const AddPurchase = () => {
                 </label>
                 <input
                   type="number"
+                  name="totalAmount"
                   onFocus={(e) =>
                     e.target.addEventListener(
                       "wheel",
@@ -721,7 +767,6 @@ const AddPurchase = () => {
                       { passive: false }
                     )
                   }
-                  name="totalAmount"
                   placeholder="Total Amount"
                   value={formData.totalAmount}
                   readOnly
@@ -747,7 +792,7 @@ const AddPurchase = () => {
             </div>
 
             <button className="w-full md:w-4/5 mx-auto text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer block">
-              Add New Purchase
+              Update Purchase
             </button>
           </form>
         </div>
@@ -756,4 +801,4 @@ const AddPurchase = () => {
   );
 };
 
-export default AddPurchase;
+export default UpdatePurchase;

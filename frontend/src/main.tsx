@@ -29,6 +29,7 @@ import UpdateInvoice from "./pages/UpdateInvoice.tsx";
 import Transactions from "./pages/Transactions.tsx";
 import AddPurchase from "./pages/AddPurchase.tsx";
 import Purchases from "./pages/Purchases.tsx";
+import UpdatePurchase from "./pages/UpdatePurchase.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -50,6 +51,10 @@ const router = createBrowserRouter(
 
           <Route path="/companyPurchases/" element={<Purchases />} />
           <Route path="/companyPurchases/add" element={<AddPurchase />} />
+          <Route
+            path="/companyPurchases/update/:id"
+            element={<UpdatePurchase />}
+          />
           <Route path="/companyClients" element={<Clients />} />
           <Route path="/companyClients/:id" element={<Transactions />} />
           <Route path="/companyClients/add" element={<AddClient />} />

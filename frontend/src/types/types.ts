@@ -134,9 +134,10 @@ export interface Purchase {
   amount: number;
   cartage: number | null;
   subTotal: number;
-  totalIgst: number | null;
-  totalCgst: number | null;
-  totalSgst: number | null;
+  totalGST: number | null;
+  totalIGST: number | null;
+  totalCGST: number | null;
+  totalSGST: number | null;
   totalAmount: number;
   totalAmountInWords: string;
   company: Company;
