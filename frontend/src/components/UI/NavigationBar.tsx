@@ -46,6 +46,17 @@ const NavigationBar = () => {
             isActive ? "bg-main !text-white rounded-2xl !shadow-2xl" : ""
           }`
         }
+        to="/companyPurchases"
+      >
+        <FaFileInvoice className="h-8 w-8 mr-2.5" />
+        Purchases
+      </NavLink>
+      <NavLink
+        className={({ isActive }) =>
+          `p-2.5 w-[90%] text-lg  font-bold flex items-center mb-1 ${
+            isActive ? "bg-main !text-white rounded-2xl !shadow-2xl" : ""
+          }`
+        }
         to="/companyClients"
       >
         <IoIosPeople className="h-8 w-8 mr-2.5" />

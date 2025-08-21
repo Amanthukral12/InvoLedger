@@ -1,77 +1,56 @@
-import { useQuery } from "@tanstack/react-query";
-import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import api from "../utils/api";
-import { inWords } from "../utils/numToWords";
-import useAuthStore from "../store/authStore";
-import { useClient } from "../hooks/client";
-import { useTransporter } from "../hooks/transporters";
-import NavigationBar from "../components/UI/NavigationBar";
 import { IoMenu } from "react-icons/io5";
 import Sidebar from "../components/UI/Sidebar";
+import NavigationBar from "../components/UI/NavigationBar";
+import React, { useEffect, useState } from "react";
 import { CiUser } from "react-icons/ci";
-import { format } from "date-fns";
-import { Client, Invoice, Transporter } from "../types/types";
-import { TbBuildingEstate } from "react-icons/tb";
-import { STATES } from "../constants/state";
+import { useClient } from "../hooks/client";
+import { Client } from "../types/types";
 import { MdDelete } from "react-icons/md";
 import { IoIosAddCircleOutline } from "react-icons/io";
+import useAuthStore from "../store/authStore";
+import { inWords } from "../utils/numToWords";
+import { usePurchase } from "../hooks/purchases";
 import axios from "axios";
-import { useInvoice } from "../hooks/invoices";
-import Loading from "../components/UI/Loading";
+import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { roundCurrency } from "../utils/roundCurrency";
-
-const UpdateInvoice = () => {
-  const { id } = useParams();
+const AddPurchase = () => {
   const [showSideBar, setShowSideBar] = useState(false);
   const [clientState, setClientState] = useState("");
   const navigate = useNavigate();
   const { company } = useAuthStore();
+  const { createPurchaseMutation } = usePurchase();
   const { clientQuery } = useClient();
-  const { transporterQuery } = useTransporter();
+
   const clients = React.useMemo(
     () => clientQuery.data ?? [],
     [clientQuery.data]
   );
-  const transporters = React.useMemo(
-    () => transporterQuery.data ?? [],
-    [transporterQuery.data]
-  );
-  const { updateInvoiceMutation } = useInvoice();
-  const { data: fetchedInvoice, isLoading } = useQuery<Invoice>({
-    queryKey: ["invoice", id],
-    queryFn: async () => {
-      const { data } = await api.get(`/invoice/${id}`);
-      return data.data;
-    },
-    enabled: !!id,
-  });
 
   const [formData, setFormData] = useState({
     invoiceNumber: "",
     invoiceDate: new Date(),
     clientId: "",
-    shipToPartyId: "",
     amount: 0,
     cartage: 0,
     subTotal: 0,
-    totalIgst: 0,
-    totalCgst: 0,
-    totalSgst: 0,
+    totalGST: 0,
+    totalIGST: 0,
+    totalCGST: 0,
+    totalSGST: 0,
     totalAmount: 0,
     totalAmountInWords: "",
-    reverseCharge: false,
-    transportMode: "",
-    vehicleNumber: "",
-    placeOfSupply: "",
   });
-  const [invoiceItems, setInvoiceItems] = useState([
+
+  const [purchaseItems, setPurchaseItems] = useState([
     {
       id: Date.now().toString(),
       invoiceId: "",
       description: "",
       quantity: 0,
       unitPrice: 0,
+      unit: "",
       hsnCode: "",
       amount: 0,
       taxPercent: 0,
@@ -84,54 +63,28 @@ const UpdateInvoice = () => {
     },
   ]);
 
-  useEffect(() => {
-    if (fetchedInvoice) {
-      setFormData({
-        invoiceNumber: fetchedInvoice.invoiceNumber || "",
-        invoiceDate: fetchedInvoice.invoiceDate
-          ? new Date(fetchedInvoice.invoiceDate)
-          : new Date(),
-        clientId: fetchedInvoice.clientId || "",
-        shipToPartyId: fetchedInvoice.shipToPartyId || "",
-        amount: fetchedInvoice.amount || 0,
-        cartage: fetchedInvoice.cartage || 0,
-        subTotal: fetchedInvoice.subTotal || 0,
-        totalCgst: fetchedInvoice.totalCgst || 0,
-        totalSgst: fetchedInvoice.totalSgst || 0,
-        totalIgst: fetchedInvoice.totalIgst || 0,
-        totalAmount: fetchedInvoice.totalAmount || 0,
-        totalAmountInWords: fetchedInvoice.totalAmountInWords || "",
-        reverseCharge: fetchedInvoice.reverseCharge || false,
-        transportMode: fetchedInvoice.transportMode || "",
-        vehicleNumber: fetchedInvoice.vehicleNumber || "",
-        placeOfSupply: fetchedInvoice.placeOfSupply || "",
-      });
-      setInvoiceItems(
-        (fetchedInvoice.invoiceItems || []).map((item) => ({
-          ...item,
-          taxPercent: item.taxPercent || 0,
-          sgstPercent: item.sgstPercent || 0,
-          cgstPercent: item.cgstPercent || 0,
-          igstPercent: item.igstPercent || 0,
-          sgst: item.sgst || 0,
-          cgst: item.cgst || 0,
-          igst: item.igst || 0,
-          quantity: item.quantity || 0,
-          unitPrice: item.unitPrice || 0,
-          amount: item.amount || 0,
-        }))
-      );
-    }
-  }, [fetchedInvoice]);
-
-  useEffect(() => {
-    const selectedClient = clients.find(
-      (client: Client) => client.id === formData.clientId
-    );
-    if (selectedClient) {
-      setClientState(selectedClient.state);
-    }
-  }, [formData.clientId, clients]);
+  const addItem = () => {
+    setPurchaseItems([
+      ...purchaseItems,
+      {
+        id: Date.now().toString(),
+        invoiceId: "",
+        description: "",
+        quantity: 0,
+        unitPrice: 0,
+        unit: "",
+        hsnCode: "",
+        amount: 0,
+        taxPercent: 0,
+        sgstPercent: 0,
+        cgstPercent: 0,
+        igstPercent: 0,
+        sgst: 0,
+        cgst: 0,
+        igst: 0,
+      },
+    ]);
+  };
 
   const handleItemChange = (
     index: number,
@@ -139,7 +92,7 @@ const UpdateInvoice = () => {
   ) => {
     const { name, value } = e.target;
 
-    setInvoiceItems((prev) => {
+    setPurchaseItems((prev) => {
       const updated = [...prev];
       const currentItem = updated[index];
 
@@ -188,32 +141,10 @@ const UpdateInvoice = () => {
     });
   };
 
-  const addItem = () => {
-    setInvoiceItems([
-      ...invoiceItems,
-      {
-        id: Date.now().toString(),
-        invoiceId: "",
-        description: "",
-        quantity: 0,
-        unitPrice: 0,
-        hsnCode: "",
-        amount: 0,
-        taxPercent: 0,
-        sgstPercent: 0,
-        cgstPercent: 0,
-        igstPercent: 0,
-        sgst: 0,
-        cgst: 0,
-        igst: 0,
-      },
-    ]);
-  };
-
   const removeItem = (index: number) => {
-    const updatedItems = [...invoiceItems];
+    const updatedItems = [...purchaseItems];
     updatedItems.splice(index, 1);
-    setInvoiceItems(updatedItems);
+    setPurchaseItems(updatedItems);
   };
 
   const handleChange = (
@@ -221,6 +152,14 @@ const UpdateInvoice = () => {
   ) => {
     const { name, value } = e.target;
 
+    if (name === "clientId") {
+      const selectedClient = clients.find(
+        (client: Client) => client.id === value
+      );
+      if (selectedClient) {
+        setClientState(selectedClient.state);
+      }
+    }
     const numericFields = ["cartage"];
     setFormData((prev) => ({
       ...prev,
@@ -229,13 +168,13 @@ const UpdateInvoice = () => {
   };
 
   useEffect(() => {
-    const itemsAmount = invoiceItems.reduce(
+    const itemsAmount = purchaseItems.reduce(
       (sum, item) => sum + item.amount,
       0
     );
     let cartageTax = 0;
     if (itemsAmount > 0) {
-      cartageTax = invoiceItems.reduce((sum, item) => {
+      cartageTax = purchaseItems.reduce((sum, item) => {
         const proportion = item.amount / itemsAmount;
         return sum + formData.cartage * proportion * (item.taxPercent / 100);
       }, 0);
@@ -254,47 +193,50 @@ const UpdateInvoice = () => {
     } else {
       cartageIgst = cartageTax;
     }
+
     const subTotal = itemsAmount + Number(formData.cartage);
 
-    const totalSgst = parseFloat(
+    const totalSGST = parseFloat(
       (
-        invoiceItems.reduce((sum, item) => sum + item.sgst, 0) + cartageSgst
+        purchaseItems.reduce((sum, item) => sum + item.sgst, 0) + cartageSgst
       ).toFixed(2)
     );
-    const totalCgst = parseFloat(
+    const totalCGST = parseFloat(
       (
-        invoiceItems.reduce((sum, item) => sum + item.cgst, 0) + cartageCgst
+        purchaseItems.reduce((sum, item) => sum + item.cgst, 0) + cartageCgst
       ).toFixed(2)
     );
-    const totalIgst = parseFloat(
+    const totalIGST = parseFloat(
       (
-        invoiceItems.reduce((sum, item) => sum + item.igst, 0) + cartageIgst
+        purchaseItems.reduce((sum, item) => sum + item.igst, 0) + cartageIgst
       ).toFixed(2)
     );
+
+    const totalGST = totalCGST + totalSGST + totalIGST;
 
     const totalAmount = Math.round(
-      subTotal + Number(totalSgst) + Number(totalCgst) + Number(totalIgst)
+      subTotal + Number(totalSGST) + Number(totalCGST) + Number(totalIGST)
     );
-
     const amountInWords = inWords(totalAmount)?.toLocaleUpperCase() || "";
 
     setFormData((prev) => ({
       ...prev,
       amount: itemsAmount,
-      totalCgst,
-      totalSgst,
-      totalIgst,
+      totalCGST,
+      totalSGST,
+      totalIGST,
+      totalGST,
       subTotal,
       totalAmount,
       totalAmountInWords: amountInWords,
     }));
-  }, [invoiceItems, formData.cartage, clientState, company?.state]);
+  }, [purchaseItems, formData.cartage, clientState, company?.state]);
 
   useEffect(() => {
-    if (invoiceItems.length > 0) {
+    if (purchaseItems.length > 0) {
       const isSameState = clientState ? company?.state === clientState : false;
 
-      setInvoiceItems((prevItems) =>
+      setPurchaseItems((prevItems) =>
         prevItems.map((item) => {
           const taxPercent = item.taxPercent;
           if (isSameState) {
@@ -322,27 +264,28 @@ const UpdateInvoice = () => {
         })
       );
     }
-  }, [clientState, company?.state, invoiceItems.length]);
+  }, [clientState, company?.state, purchaseItems.length]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    const finalInvoice = {
+    const finalPurchase = {
       ...formData,
       invoiceDate: new Date(formData.invoiceDate),
-      invoiceItems,
+      purchaseItems,
     };
     try {
       e.preventDefault();
-      await updateInvoiceMutation.mutateAsync({ id, formData: finalInvoice });
-      navigate("/companyInvoices");
+      await createPurchaseMutation.mutateAsync(finalPurchase);
+      navigate("/companyPurchases");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
+        toast.error(error.response?.data.message);
       } else {
         console.error("Unexpected error:", error);
       }
     }
   };
-  if (isLoading) return <Loading />;
+
   return (
     <div className="bg-[#edf7fd] bg-cover min-h-screen overflow-hidden lg:h-screen flex flex-col lg:flex-row w-full text-main">
       <div className=" w-0 lg:w-1/5 z-5">
@@ -359,7 +302,9 @@ const UpdateInvoice = () => {
       <Sidebar shown={showSideBar} close={() => setShowSideBar(!showSideBar)} />
       <section className="w-full lg:w-4/5 overflow-y-auto min-h-screen mb-16 flex justify-center items-start">
         <div className="w-[90%] bg-white shadow-md rounded-lg py-3 mb-4 mt-10 flex flex-col items-center px-1 md:px-0">
-          <h1 className="font-bold text-3xl m-3  text-main">Update Invoice</h1>
+          <h1 className="font-bold text-3xl m-3  text-main">
+            Add New Purchase
+          </h1>
           <form className="w-full" onSubmit={handleSubmit}>
             <div className="w-full md:w-4/5 mx-auto flex">
               <div className="w-full md:w-4/5 mx-auto relative mb-4 mr-4">
@@ -379,7 +324,7 @@ const UpdateInvoice = () => {
                 <input
                   type="date"
                   placeholder="Invoice Date"
-                  name="invoiceDate"
+                  name="InvoiceDate"
                   required
                   value={format(new Date(formData.invoiceDate), "yyyy-MM-dd")}
                   onChange={handleChange}
@@ -405,35 +350,11 @@ const UpdateInvoice = () => {
                 ))}
               </select>
             </div>
-            <div className="w-full md:w-4/5 mx-auto relative mb-4">
-              <label htmlFor="placeOfSupply" className=" text-sm font-medium ">
-                Place of Supply
-              </label>
-              <TbBuildingEstate className="absolute left-3 top-1/2 transform text-gray-400 h-5 w-5" />
-              <select
-                name="placeOfSupply"
-                required
-                value={formData.placeOfSupply}
-                onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base md:text-sm"
-              >
-                <option value="">Select a state</option>
-                {STATES.map((state) => (
-                  <option
-                    key={state.code}
-                    value={`${state.code} - ${state.name}`}
-                  >
-                    {" "}
-                    {state.code} - {state.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="w-full md:w-4/5 mx-auto relative mb-4">
-              <h3 className="text-2xl font-medium mb-2">Invoice Items</h3>
 
+            <div className="w-full md:w-4/5 mx-auto relative mb-4">
+              <h3 className="text-2xl font-medium mb-2">Purchase Items</h3>
               <div className="flex flex-col gap-4">
-                {invoiceItems.map((item, index) => (
+                {purchaseItems.map((item, index) => (
                   <div
                     key={item.id}
                     className="border rounded-lg p-4 shadow-sm bg-white"
@@ -475,6 +396,16 @@ const UpdateInvoice = () => {
                           )
                         }
                         value={item.quantity}
+                        onChange={(e) => handleItemChange(index, e)}
+                        className="w-full p-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none mt-1"
+                      />
+                    </div>
+                    <div className="mb-2">
+                      <label className="font-semibold text-sm">Unit</label>
+                      <input
+                        type="text"
+                        name="unit"
+                        value={item.unit}
                         onChange={(e) => handleItemChange(index, e)}
                         className="w-full p-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none mt-1"
                       />
@@ -653,8 +584,6 @@ const UpdateInvoice = () => {
                 </label>
                 <input
                   type="number"
-                  id="cartage"
-                  name="cartage"
                   onFocus={(e) =>
                     e.target.addEventListener(
                       "wheel",
@@ -664,6 +593,8 @@ const UpdateInvoice = () => {
                       { passive: false }
                     )
                   }
+                  id="cartage"
+                  name="cartage"
                   placeholder="Cartage"
                   value={Number(formData.cartage)}
                   onChange={handleChange}
@@ -677,8 +608,6 @@ const UpdateInvoice = () => {
                 </label>
                 <input
                   type="number"
-                  id="subTotal"
-                  name="subTotal"
                   onFocus={(e) =>
                     e.target.addEventListener(
                       "wheel",
@@ -688,6 +617,8 @@ const UpdateInvoice = () => {
                       { passive: false }
                     )
                   }
+                  id="subTotal"
+                  name="subTotal"
                   placeholder="Sub Total"
                   value={formData.subTotal}
                   readOnly
@@ -696,15 +627,13 @@ const UpdateInvoice = () => {
               </div>
               <div className="flex flex-col">
                 <label
-                  htmlFor="totalCgst"
+                  htmlFor="totalCGST"
                   className="mb-1 text-sm font-medium "
                 >
                   Total CGST
                 </label>
                 <input
                   type="number"
-                  id="totalCgst"
-                  name="totalCgst"
                   onFocus={(e) =>
                     e.target.addEventListener(
                       "wheel",
@@ -714,23 +643,23 @@ const UpdateInvoice = () => {
                       { passive: false }
                     )
                   }
+                  id="totalCgst"
+                  name="totalCGST"
                   placeholder="Total CGST"
-                  value={formData.totalCgst}
+                  value={formData.totalCGST}
                   readOnly
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
               </div>
               <div className="flex flex-col">
                 <label
-                  htmlFor="totalSgst"
+                  htmlFor="totalSGST"
                   className="mb-1 text-sm font-medium "
                 >
                   Total SGST
                 </label>
                 <input
                   type="number"
-                  id="totalSgst"
-                  name="totalSgst"
                   onFocus={(e) =>
                     e.target.addEventListener(
                       "wheel",
@@ -740,23 +669,23 @@ const UpdateInvoice = () => {
                       { passive: false }
                     )
                   }
+                  id="totalSGST"
+                  name="totalSGST"
                   placeholder="Total SGST"
-                  value={formData.totalSgst}
+                  value={formData.totalSGST}
                   readOnly
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
               </div>
               <div className="flex flex-col">
                 <label
-                  htmlFor="totalIgst"
+                  htmlFor="totalIGST"
                   className="mb-1 text-sm font-medium "
                 >
                   Total IGST
                 </label>
                 <input
                   type="number"
-                  id="totalIgst"
-                  name="totalIgst"
                   onFocus={(e) =>
                     e.target.addEventListener(
                       "wheel",
@@ -766,8 +695,10 @@ const UpdateInvoice = () => {
                       { passive: false }
                     )
                   }
+                  id="totalIGST"
+                  name="totalIGST"
                   placeholder="Total IGST"
-                  value={formData.totalIgst}
+                  value={formData.totalIGST}
                   readOnly
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
@@ -781,7 +712,6 @@ const UpdateInvoice = () => {
                 </label>
                 <input
                   type="number"
-                  name="totalAmount"
                   onFocus={(e) =>
                     e.target.addEventListener(
                       "wheel",
@@ -791,6 +721,7 @@ const UpdateInvoice = () => {
                       { passive: false }
                     )
                   }
+                  name="totalAmount"
                   placeholder="Total Amount"
                   value={formData.totalAmount}
                   readOnly
@@ -815,48 +746,8 @@ const UpdateInvoice = () => {
               />
             </div>
 
-            <div className="w-full md:w-4/5 mx-auto relative mb-4">
-              <CiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <select
-                name="shipToPartyId"
-                value={formData.shipToPartyId}
-                onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base md:text-sm"
-              >
-                <option value="">Select Transporter</option>
-                {transporters?.map((transporter: Transporter) => (
-                  <option key={transporter.id} value={transporter.id}>
-                    {transporter.name} - {transporter.GSTIN}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="w-full md:w-4/5 mx-auto flex">
-              <div className="w-full md:w-4/5 mx-auto relative mb-4 mr-4">
-                <CiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <input
-                  type="input"
-                  placeholder="Transport Mode"
-                  name="transportMode"
-                  value={formData.transportMode}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base md:text-sm"
-                />
-              </div>
-              <div className="w-full md:w-4/5 mx-auto relative mb-4">
-                <CiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <input
-                  type="input"
-                  placeholder="Vehicle Number"
-                  name="vehicleNumber"
-                  value={formData.vehicleNumber}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base md:text-sm"
-                />
-              </div>
-            </div>
             <button className="w-full md:w-4/5 mx-auto text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer block">
-              Update Invoice
+              Add New Purchase
             </button>
           </form>
         </div>
@@ -865,4 +756,4 @@ const UpdateInvoice = () => {
   );
 };
 
-export default UpdateInvoice;
+export default AddPurchase;

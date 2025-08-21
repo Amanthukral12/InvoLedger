@@ -15,7 +15,7 @@ export const createClient = asyncHandler(
 
     const { name, address, GSTIN, email, phonenumber, state } = req.body;
 
-    if (!name || !address || !GSTIN || !phonenumber || !state) {
+    if (!name || !address || !GSTIN || !state) {
       throw new ApiError(400, "Please fill all the fields", [
         "Please fill all the fields",
       ]);

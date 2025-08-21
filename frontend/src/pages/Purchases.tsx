@@ -2,10 +2,10 @@ import { IoMenu } from "react-icons/io5";
 import CompanyHeader from "../components/UI/CompanyHeader";
 import NavigationBar from "../components/UI/NavigationBar";
 import Sidebar from "../components/UI/Sidebar";
-import { useInvoice } from "../hooks/invoices";
+import { usePurchase } from "../hooks/purchases";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { CustomInvoiceData } from "../types/types";
+import { CustomPurchaseData } from "../types/types";
 import { format } from "date-fns";
 import { FaRegEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
@@ -13,10 +13,10 @@ import { monthNames } from "../constants/months";
 import axios from "axios";
 import Loading from "../components/UI/Loading";
 import { debounce } from "../utils/debounce";
-import { generateExcel } from "../utils/generateExcel";
 import { useAuth } from "../hooks/auth";
+import { generateExcelForPurchase } from "../utils/generateExcelForPurchase";
 import { useFilterStore } from "../store/filterStore";
-const Invoices = () => {
+const Purchases = () => {
   const [showSideBar, setShowSideBar] = useState(false);
 
   const {
@@ -31,24 +31,19 @@ const Invoices = () => {
     setSearchTerm,
   } = useFilterStore();
   const { company } = useAuth();
-  const {
-    invoiceQuery,
-    deleteInvoiceMutation,
-    generateInvoiceMutation,
-    invoicesForMonthCompany,
-  } = useInvoice();
-  const [invoiceType, setInvoiceType] = useState("ORIGINAL");
+  const { purchaseQuery, deletePurchaseMutation, purchasesForMonthCompany } =
+    usePurchase();
   const [inputValue, setInputValue] = useState(searchTerm);
-  const data = invoiceQuery.data;
-  const invoicesForCompany = invoicesForMonthCompany.data?.invoicesData ?? [];
+  const data = purchaseQuery.data;
+  const purchasesForCompany = purchasesForMonthCompany.data ?? [];
   const companyName = company?.name ?? "";
-  const invoices = data?.invoices ?? [];
+  const purchases = data?.purchases ?? [];
   const totalCount = data?.totalCount ?? 0;
   const navigate = useNavigate();
 
   const deleteHandler = async (id: string) => {
     try {
-      await deleteInvoiceMutation.mutateAsync(id);
+      await deletePurchaseMutation.mutateAsync(id);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
@@ -58,34 +53,15 @@ const Invoices = () => {
     }
   };
 
-  const handleDownload = async ({
-    id,
-    invoiceNumber,
-    clientName,
-    invoiceType,
-  }: {
-    id: string;
-    invoiceNumber: number;
-    clientName: string;
-    invoiceType: string;
-  }) => {
-    await generateInvoiceMutation.mutateAsync({
-      id,
-      invoiceNumber,
-      clientName,
-      invoiceType,
-    });
-  };
-
   const handleExcelExport = async () => {
-    if (!invoicesForCompany || invoicesForCompany.length === 0) {
-      alert("No invoices data available for export");
+    if (!purchasesForCompany || purchasesForCompany.length === 0) {
+      alert("No Purchases data available for export");
       return;
     }
 
     try {
-      await generateExcel(
-        invoicesForCompany,
+      await generateExcelForPurchase(
+        purchasesForCompany,
         selectedMonth,
         selectedYear,
         companyName
@@ -107,12 +83,12 @@ const Invoices = () => {
     debouncedSetSearchTerm(inputValue);
   }, [inputValue, debouncedSetSearchTerm]);
 
-  if (invoiceQuery.isLoading) {
+  if (purchaseQuery.isLoading) {
     return <Loading />;
   }
 
-  if (invoiceQuery.isError) {
-    return <p>Error loading invoices: {invoiceQuery.error.message}</p>;
+  if (purchaseQuery.isError) {
+    return <p>Error loading Purchases: {purchaseQuery.error.message}</p>;
   }
 
   return (
@@ -133,17 +109,19 @@ const Invoices = () => {
         <CompanyHeader />
         <div className="mx-3">
           <div className="flex justify-between mb-4 mx-0 lg:mx-2">
-            <h3 className="text-lg lg:text-2xl font-semibold mb-4">Invoices</h3>
-            <Link to={"/companyInvoices/add"}>
+            <h3 className="text-lg lg:text-2xl font-semibold mb-4">
+              Purchases
+            </h3>
+            <Link to={"/companyPurchases/add"}>
               <button className="text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer">
-                Add New Invoice
+                Add New Purchase
               </button>
             </Link>
           </div>
           <div className="w-[90%] mx-auto">
             <input
               type="text"
-              placeholder="Search Invoices..."
+              placeholder="Search Purchases..."
               className="w-full p-2 border-1 bg-white  rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none mt-1 mb-4"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
@@ -181,72 +159,52 @@ const Invoices = () => {
               onClick={handleExcelExport}
               className="text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
               disabled={
-                invoicesForMonthCompany.isLoading ||
-                !invoicesForCompany ||
-                invoicesForCompany.length === 0
+                purchasesForMonthCompany.isLoading ||
+                !purchasesForCompany ||
+                purchasesForCompany.length === 0
               }
             >
-              {invoicesForMonthCompany.isLoading
+              {purchasesForMonthCompany.isLoading
                 ? "Loading..."
                 : "Export to Excel"}
             </button>
           </div>
           {totalCount !== 0 && (
-            <p className="text-lg font-semibold">Total {totalCount} Invoices</p>
+            <p className="text-lg font-semibold">
+              Total {totalCount} Purchases
+            </p>
           )}
           {totalCount === 0 && (
-            <p className="text-lg font-semibold">No Invoices found</p>
+            <p className="text-lg font-semibold">No Purchases found</p>
           )}
           <div className="w-[90%] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-8">
-            {invoices.map((invoice: CustomInvoiceData) => (
+            {purchases.map((purchase: CustomPurchaseData) => (
               <div
-                key={invoice.id}
+                key={purchase.id}
                 className="bg-white my-1 rounded-lg p-2 text-main shadow-md flex flex-col justify-between font-medium"
               >
                 <div className="flex w-full justify-between">
                   <div className="leading-8">
-                    <p>Invoice Number: {invoice.invoiceNumber}</p>
-                    <p>Client Name: {invoice.client.name}</p>
+                    <p>Invoice Number: {purchase.invoiceNumber}</p>
+                    <p>Client Name: {purchase.client.name}</p>
                     <p>
-                      Invoice Date:{" "}
-                      {format(new Date(invoice.invoiceDate), "dd/MM/yyyy")}
+                      Purchase Date:{" "}
+                      {format(new Date(purchase.invoiceDate), "dd/MM/yyyy")}
                     </p>
-                    <div>
-                      <label>Invoice Type: </label>
-                      <select onChange={(e) => setInvoiceType(e.target.value)}>
-                        <option value="ORIGINAL">ORIGINAL</option>
-                        <option value="DUPLICATE">DUPLICATE</option>
-                        <option value="OFFICE COPY">OFFICE COPY</option>
-                      </select>
-                    </div>
-
-                    <button
-                      className="text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer block my-2 mx-auto"
-                      onClick={() => {
-                        handleDownload({
-                          id: invoice.id,
-                          invoiceNumber: invoice.invoiceNumber,
-                          clientName: invoice.client.name,
-                          invoiceType,
-                        });
-                      }}
-                    >
-                      Download Invoice
-                    </button>
                   </div>
                   <div className="flex items-center">
                     <FaRegEdit
                       className="text-2xl mx-2"
                       onClick={(e) => {
                         e.preventDefault();
-                        navigate(`/companyInvoices/update/${invoice.id}`);
+                        navigate(`/companyPurchases/update/${purchase.id}`);
                       }}
                     />
                     <MdDelete
                       className="text-2xl mx-2"
                       onClick={(e) => {
                         e.preventDefault();
-                        deleteHandler(invoice.id);
+                        deleteHandler(purchase.id);
                       }}
                     />
                   </div>
@@ -285,4 +243,4 @@ const Invoices = () => {
   );
 };
 
-export default Invoices;
+export default Purchases;

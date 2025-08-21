@@ -126,8 +126,12 @@ const AddInvoice = () => {
         updatedItem.cgstPercent = halfTax;
         updatedItem.sgstPercent = halfTax;
         updatedItem.igstPercent = 0;
-        updatedItem.cgst = (halfTax * updatedItem.amount) / 100;
-        updatedItem.sgst = (halfTax * updatedItem.amount) / 100;
+        updatedItem.cgst = parseFloat(
+          ((halfTax * updatedItem.amount) / 100).toFixed(2)
+        );
+        updatedItem.sgst = parseFloat(
+          ((halfTax * updatedItem.amount) / 100).toFixed(2)
+        );
         updatedItem.igst = 0;
       } else {
         updatedItem.cgstPercent = 0;
@@ -135,7 +139,9 @@ const AddInvoice = () => {
         updatedItem.igstPercent = taxPercent;
         updatedItem.cgst = 0;
         updatedItem.sgst = 0;
-        updatedItem.igst = (taxPercent * updatedItem.amount) / 100;
+        updatedItem.igst = parseFloat(
+          ((taxPercent * updatedItem.amount) / 100).toFixed(2)
+        );
       }
 
       updated[index] = updatedItem;
@@ -198,12 +204,21 @@ const AddInvoice = () => {
 
     const subTotal = itemsAmount + Number(formData.cartage);
 
-    const totalSgst =
-      invoiceItems.reduce((sum, item) => sum + item.sgst, 0) + cartageSgst;
-    const totalCgst =
-      invoiceItems.reduce((sum, item) => sum + item.cgst, 0) + cartageCgst;
-    const totalIgst =
-      invoiceItems.reduce((sum, item) => sum + item.igst, 0) + cartageIgst;
+    const totalSgst = parseFloat(
+      (
+        invoiceItems.reduce((sum, item) => sum + item.sgst, 0) + cartageSgst
+      ).toFixed(2)
+    );
+    const totalCgst = parseFloat(
+      (
+        invoiceItems.reduce((sum, item) => sum + item.cgst, 0) + cartageCgst
+      ).toFixed(2)
+    );
+    const totalIgst = parseFloat(
+      (
+        invoiceItems.reduce((sum, item) => sum + item.igst, 0) + cartageIgst
+      ).toFixed(2)
+    );
 
     const totalAmount = Math.round(
       subTotal + Number(totalSgst) + Number(totalCgst) + Number(totalIgst)
@@ -236,8 +251,8 @@ const AddInvoice = () => {
               sgstPercent: halfTax,
               cgstPercent: halfTax,
               igstPercent: 0,
-              sgst: (halfTax * item.amount) / 100,
-              cgst: (halfTax * item.amount) / 100,
+              sgst: parseFloat(((halfTax * item.amount) / 100).toFixed(2)),
+              cgst: parseFloat(((halfTax * item.amount) / 100).toFixed(2)),
               igst: 0,
             };
           } else {
@@ -248,7 +263,7 @@ const AddInvoice = () => {
               igstPercent: taxPercent,
               sgst: 0,
               cgst: 0,
-              igst: (taxPercent * item.amount) / 100,
+              igst: parseFloat(((taxPercent * item.amount) / 100).toFixed(2)),
             };
           }
         })

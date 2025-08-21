@@ -5,43 +5,35 @@ import api from "../utils/api";
 import { inWords } from "../utils/numToWords";
 import useAuthStore from "../store/authStore";
 import { useClient } from "../hooks/client";
-import { useTransporter } from "../hooks/transporters";
 import NavigationBar from "../components/UI/NavigationBar";
 import { IoMenu } from "react-icons/io5";
 import Sidebar from "../components/UI/Sidebar";
 import { CiUser } from "react-icons/ci";
 import { format } from "date-fns";
-import { Client, Invoice, Transporter } from "../types/types";
-import { TbBuildingEstate } from "react-icons/tb";
-import { STATES } from "../constants/state";
+import { Client, Purchase } from "../types/types";
 import { MdDelete } from "react-icons/md";
 import { IoIosAddCircleOutline } from "react-icons/io";
 import axios from "axios";
-import { useInvoice } from "../hooks/invoices";
+import { usePurchase } from "../hooks/purchases";
 import Loading from "../components/UI/Loading";
 import { roundCurrency } from "../utils/roundCurrency";
 
-const UpdateInvoice = () => {
+const UpdatePurchase = () => {
   const { id } = useParams();
   const [showSideBar, setShowSideBar] = useState(false);
   const [clientState, setClientState] = useState("");
   const navigate = useNavigate();
   const { company } = useAuthStore();
   const { clientQuery } = useClient();
-  const { transporterQuery } = useTransporter();
   const clients = React.useMemo(
     () => clientQuery.data ?? [],
     [clientQuery.data]
   );
-  const transporters = React.useMemo(
-    () => transporterQuery.data ?? [],
-    [transporterQuery.data]
-  );
-  const { updateInvoiceMutation } = useInvoice();
-  const { data: fetchedInvoice, isLoading } = useQuery<Invoice>({
-    queryKey: ["invoice", id],
+  const { updatePurchaseMutation } = usePurchase();
+  const { data: fetchedPurchase, isLoading } = useQuery<Purchase>({
+    queryKey: ["purchase", id],
     queryFn: async () => {
-      const { data } = await api.get(`/invoice/${id}`);
+      const { data } = await api.get(`/purchase/${id}`);
       return data.data;
     },
     enabled: !!id,
@@ -51,27 +43,24 @@ const UpdateInvoice = () => {
     invoiceNumber: "",
     invoiceDate: new Date(),
     clientId: "",
-    shipToPartyId: "",
     amount: 0,
     cartage: 0,
     subTotal: 0,
-    totalIgst: 0,
-    totalCgst: 0,
-    totalSgst: 0,
+    totalGST: 0,
+    totalCGST: 0,
+    totalIGST: 0,
+    totalSGST: 0,
     totalAmount: 0,
     totalAmountInWords: "",
-    reverseCharge: false,
-    transportMode: "",
-    vehicleNumber: "",
-    placeOfSupply: "",
   });
-  const [invoiceItems, setInvoiceItems] = useState([
+  const [purchaseItems, setPurchaseItems] = useState([
     {
       id: Date.now().toString(),
       invoiceId: "",
       description: "",
       quantity: 0,
       unitPrice: 0,
+      unit: "",
       hsnCode: "",
       amount: 0,
       taxPercent: 0,
@@ -85,29 +74,26 @@ const UpdateInvoice = () => {
   ]);
 
   useEffect(() => {
-    if (fetchedInvoice) {
+    if (fetchedPurchase) {
       setFormData({
-        invoiceNumber: fetchedInvoice.invoiceNumber || "",
-        invoiceDate: fetchedInvoice.invoiceDate
-          ? new Date(fetchedInvoice.invoiceDate)
+        invoiceNumber: fetchedPurchase.invoiceNumber || "",
+        invoiceDate: fetchedPurchase.invoiceDate
+          ? new Date(fetchedPurchase.invoiceDate)
           : new Date(),
-        clientId: fetchedInvoice.clientId || "",
-        shipToPartyId: fetchedInvoice.shipToPartyId || "",
-        amount: fetchedInvoice.amount || 0,
-        cartage: fetchedInvoice.cartage || 0,
-        subTotal: fetchedInvoice.subTotal || 0,
-        totalCgst: fetchedInvoice.totalCgst || 0,
-        totalSgst: fetchedInvoice.totalSgst || 0,
-        totalIgst: fetchedInvoice.totalIgst || 0,
-        totalAmount: fetchedInvoice.totalAmount || 0,
-        totalAmountInWords: fetchedInvoice.totalAmountInWords || "",
-        reverseCharge: fetchedInvoice.reverseCharge || false,
-        transportMode: fetchedInvoice.transportMode || "",
-        vehicleNumber: fetchedInvoice.vehicleNumber || "",
-        placeOfSupply: fetchedInvoice.placeOfSupply || "",
+        clientId: fetchedPurchase.clientId || "",
+
+        amount: fetchedPurchase.amount || 0,
+        cartage: fetchedPurchase.cartage || 0,
+        subTotal: fetchedPurchase.subTotal || 0,
+        totalGST: fetchedPurchase.totalGST || 0,
+        totalCGST: fetchedPurchase.totalCGST || 0,
+        totalSGST: fetchedPurchase.totalSGST || 0,
+        totalIGST: fetchedPurchase.totalIGST || 0,
+        totalAmount: fetchedPurchase.totalAmount || 0,
+        totalAmountInWords: fetchedPurchase.totalAmountInWords || "",
       });
-      setInvoiceItems(
-        (fetchedInvoice.invoiceItems || []).map((item) => ({
+      setPurchaseItems(
+        (fetchedPurchase.purchaseItems || []).map((item) => ({
           ...item,
           taxPercent: item.taxPercent || 0,
           sgstPercent: item.sgstPercent || 0,
@@ -122,7 +108,7 @@ const UpdateInvoice = () => {
         }))
       );
     }
-  }, [fetchedInvoice]);
+  }, [fetchedPurchase]);
 
   useEffect(() => {
     const selectedClient = clients.find(
@@ -139,7 +125,7 @@ const UpdateInvoice = () => {
   ) => {
     const { name, value } = e.target;
 
-    setInvoiceItems((prev) => {
+    setPurchaseItems((prev) => {
       const updated = [...prev];
       const currentItem = updated[index];
 
@@ -189,14 +175,15 @@ const UpdateInvoice = () => {
   };
 
   const addItem = () => {
-    setInvoiceItems([
-      ...invoiceItems,
+    setPurchaseItems([
+      ...purchaseItems,
       {
         id: Date.now().toString(),
         invoiceId: "",
         description: "",
         quantity: 0,
         unitPrice: 0,
+        unit: "",
         hsnCode: "",
         amount: 0,
         taxPercent: 0,
@@ -211,9 +198,9 @@ const UpdateInvoice = () => {
   };
 
   const removeItem = (index: number) => {
-    const updatedItems = [...invoiceItems];
+    const updatedItems = [...purchaseItems];
     updatedItems.splice(index, 1);
-    setInvoiceItems(updatedItems);
+    setPurchaseItems(updatedItems);
   };
 
   const handleChange = (
@@ -229,13 +216,13 @@ const UpdateInvoice = () => {
   };
 
   useEffect(() => {
-    const itemsAmount = invoiceItems.reduce(
+    const itemsAmount = purchaseItems.reduce(
       (sum, item) => sum + item.amount,
       0
     );
     let cartageTax = 0;
     if (itemsAmount > 0) {
-      cartageTax = invoiceItems.reduce((sum, item) => {
+      cartageTax = purchaseItems.reduce((sum, item) => {
         const proportion = item.amount / itemsAmount;
         return sum + formData.cartage * proportion * (item.taxPercent / 100);
       }, 0);
@@ -256,24 +243,26 @@ const UpdateInvoice = () => {
     }
     const subTotal = itemsAmount + Number(formData.cartage);
 
-    const totalSgst = parseFloat(
+    const totalSGST = parseFloat(
       (
-        invoiceItems.reduce((sum, item) => sum + item.sgst, 0) + cartageSgst
+        purchaseItems.reduce((sum, item) => sum + item.sgst, 0) + cartageSgst
       ).toFixed(2)
     );
-    const totalCgst = parseFloat(
+    const totalCGST = parseFloat(
       (
-        invoiceItems.reduce((sum, item) => sum + item.cgst, 0) + cartageCgst
+        purchaseItems.reduce((sum, item) => sum + item.cgst, 0) + cartageCgst
       ).toFixed(2)
     );
-    const totalIgst = parseFloat(
+    const totalIGST = parseFloat(
       (
-        invoiceItems.reduce((sum, item) => sum + item.igst, 0) + cartageIgst
+        purchaseItems.reduce((sum, item) => sum + item.igst, 0) + cartageIgst
       ).toFixed(2)
     );
 
+    const totalGST = totalCGST + totalSGST + totalIGST;
+
     const totalAmount = Math.round(
-      subTotal + Number(totalSgst) + Number(totalCgst) + Number(totalIgst)
+      subTotal + Number(totalSGST) + Number(totalCGST) + Number(totalIGST)
     );
 
     const amountInWords = inWords(totalAmount)?.toLocaleUpperCase() || "";
@@ -281,20 +270,21 @@ const UpdateInvoice = () => {
     setFormData((prev) => ({
       ...prev,
       amount: itemsAmount,
-      totalCgst,
-      totalSgst,
-      totalIgst,
+      totalCGST,
+      totalSGST,
+      totalIGST,
+      totalGST,
       subTotal,
       totalAmount,
       totalAmountInWords: amountInWords,
     }));
-  }, [invoiceItems, formData.cartage, clientState, company?.state]);
+  }, [purchaseItems, formData.cartage, clientState, company?.state]);
 
   useEffect(() => {
-    if (invoiceItems.length > 0) {
+    if (purchaseItems.length > 0) {
       const isSameState = clientState ? company?.state === clientState : false;
 
-      setInvoiceItems((prevItems) =>
+      setPurchaseItems((prevItems) =>
         prevItems.map((item) => {
           const taxPercent = item.taxPercent;
           if (isSameState) {
@@ -322,18 +312,18 @@ const UpdateInvoice = () => {
         })
       );
     }
-  }, [clientState, company?.state, invoiceItems.length]);
+  }, [clientState, company?.state, purchaseItems.length]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    const finalInvoice = {
+    const finalPurchase = {
       ...formData,
       invoiceDate: new Date(formData.invoiceDate),
-      invoiceItems,
+      purchaseItems,
     };
     try {
       e.preventDefault();
-      await updateInvoiceMutation.mutateAsync({ id, formData: finalInvoice });
-      navigate("/companyInvoices");
+      await updatePurchaseMutation.mutateAsync({ id, formData: finalPurchase });
+      navigate("/companyPurchases");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
@@ -359,7 +349,7 @@ const UpdateInvoice = () => {
       <Sidebar shown={showSideBar} close={() => setShowSideBar(!showSideBar)} />
       <section className="w-full lg:w-4/5 overflow-y-auto min-h-screen mb-16 flex justify-center items-start">
         <div className="w-[90%] bg-white shadow-md rounded-lg py-3 mb-4 mt-10 flex flex-col items-center px-1 md:px-0">
-          <h1 className="font-bold text-3xl m-3  text-main">Update Invoice</h1>
+          <h1 className="font-bold text-3xl m-3  text-main">Update Purchase</h1>
           <form className="w-full" onSubmit={handleSubmit}>
             <div className="w-full md:w-4/5 mx-auto flex">
               <div className="w-full md:w-4/5 mx-auto relative mb-4 mr-4">
@@ -406,34 +396,10 @@ const UpdateInvoice = () => {
               </select>
             </div>
             <div className="w-full md:w-4/5 mx-auto relative mb-4">
-              <label htmlFor="placeOfSupply" className=" text-sm font-medium ">
-                Place of Supply
-              </label>
-              <TbBuildingEstate className="absolute left-3 top-1/2 transform text-gray-400 h-5 w-5" />
-              <select
-                name="placeOfSupply"
-                required
-                value={formData.placeOfSupply}
-                onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base md:text-sm"
-              >
-                <option value="">Select a state</option>
-                {STATES.map((state) => (
-                  <option
-                    key={state.code}
-                    value={`${state.code} - ${state.name}`}
-                  >
-                    {" "}
-                    {state.code} - {state.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="w-full md:w-4/5 mx-auto relative mb-4">
-              <h3 className="text-2xl font-medium mb-2">Invoice Items</h3>
+              <h3 className="text-2xl font-medium mb-2">Purchase Items</h3>
 
               <div className="flex flex-col gap-4">
-                {invoiceItems.map((item, index) => (
+                {purchaseItems.map((item, index) => (
                   <div
                     key={item.id}
                     className="border rounded-lg p-4 shadow-sm bg-white"
@@ -475,6 +441,16 @@ const UpdateInvoice = () => {
                           )
                         }
                         value={item.quantity}
+                        onChange={(e) => handleItemChange(index, e)}
+                        className="w-full p-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none mt-1"
+                      />
+                    </div>
+                    <div className="mb-2">
+                      <label className="font-semibold text-sm">Unit</label>
+                      <input
+                        type="text"
+                        name="unit"
+                        value={item.unit}
                         onChange={(e) => handleItemChange(index, e)}
                         className="w-full p-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none mt-1"
                       />
@@ -696,15 +672,15 @@ const UpdateInvoice = () => {
               </div>
               <div className="flex flex-col">
                 <label
-                  htmlFor="totalCgst"
+                  htmlFor="totalCGST"
                   className="mb-1 text-sm font-medium "
                 >
                   Total CGST
                 </label>
                 <input
                   type="number"
-                  id="totalCgst"
-                  name="totalCgst"
+                  id="totalCGST"
+                  name="totalCGST"
                   onFocus={(e) =>
                     e.target.addEventListener(
                       "wheel",
@@ -715,22 +691,22 @@ const UpdateInvoice = () => {
                     )
                   }
                   placeholder="Total CGST"
-                  value={formData.totalCgst}
+                  value={formData.totalCGST}
                   readOnly
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
               </div>
               <div className="flex flex-col">
                 <label
-                  htmlFor="totalSgst"
+                  htmlFor="totalSGST"
                   className="mb-1 text-sm font-medium "
                 >
                   Total SGST
                 </label>
                 <input
                   type="number"
-                  id="totalSgst"
-                  name="totalSgst"
+                  id="totalSGST"
+                  name="totalSGST"
                   onFocus={(e) =>
                     e.target.addEventListener(
                       "wheel",
@@ -741,22 +717,22 @@ const UpdateInvoice = () => {
                     )
                   }
                   placeholder="Total SGST"
-                  value={formData.totalSgst}
+                  value={formData.totalSGST}
                   readOnly
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
               </div>
               <div className="flex flex-col">
                 <label
-                  htmlFor="totalIgst"
+                  htmlFor="totalIGST"
                   className="mb-1 text-sm font-medium "
                 >
                   Total IGST
                 </label>
                 <input
                   type="number"
-                  id="totalIgst"
-                  name="totalIgst"
+                  id="totalIGST"
+                  name="totalIGST"
                   onFocus={(e) =>
                     e.target.addEventListener(
                       "wheel",
@@ -767,7 +743,7 @@ const UpdateInvoice = () => {
                     )
                   }
                   placeholder="Total IGST"
-                  value={formData.totalIgst}
+                  value={formData.totalIGST}
                   readOnly
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
@@ -815,48 +791,8 @@ const UpdateInvoice = () => {
               />
             </div>
 
-            <div className="w-full md:w-4/5 mx-auto relative mb-4">
-              <CiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <select
-                name="shipToPartyId"
-                value={formData.shipToPartyId}
-                onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base md:text-sm"
-              >
-                <option value="">Select Transporter</option>
-                {transporters?.map((transporter: Transporter) => (
-                  <option key={transporter.id} value={transporter.id}>
-                    {transporter.name} - {transporter.GSTIN}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="w-full md:w-4/5 mx-auto flex">
-              <div className="w-full md:w-4/5 mx-auto relative mb-4 mr-4">
-                <CiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <input
-                  type="input"
-                  placeholder="Transport Mode"
-                  name="transportMode"
-                  value={formData.transportMode}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base md:text-sm"
-                />
-              </div>
-              <div className="w-full md:w-4/5 mx-auto relative mb-4">
-                <CiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <input
-                  type="input"
-                  placeholder="Vehicle Number"
-                  name="vehicleNumber"
-                  value={formData.vehicleNumber}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base md:text-sm"
-                />
-              </div>
-            </div>
             <button className="w-full md:w-4/5 mx-auto text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer block">
-              Update Invoice
+              Update Purchase
             </button>
           </form>
         </div>
@@ -865,4 +801,4 @@ const UpdateInvoice = () => {
   );
 };
 
-export default UpdateInvoice;
+export default UpdatePurchase;

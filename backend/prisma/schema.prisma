@@ -33,6 +33,7 @@ model Company {
   clients                  Client[]
   invoices                 Invoice[]
   shipToParty              ShipToParty[]
+  purchases                Purchase[]
 }
 
 model Session {
@@ -63,6 +64,7 @@ model Client {
   company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
   invoices     Invoice[]
   transactions Transaction[]
+  Purchase     Purchase[]
 
   @@unique([companyId, GSTIN])
 }
@@ -151,6 +153,49 @@ model Transaction {
   updatedAt   DateTime        @updatedAt
 
   @@index([clientId])
+}
+
+model Purchase {
+  id                 String         @id @default(uuid())
+  invoiceNumber      String
+  invoiceDate        DateTime
+  companyId          Int
+  clientId           String
+  amount             Float
+  subTotal           Float
+  cartage            Float
+  totalAmount        Float
+  totalGST           Float
+  totalIGST          Float
+  totalCGST          Float
+  totalSGST          Float
+  totalAmountInWords String
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  purchaseItems      PurchaseItem[]
+  client             Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  company            Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model PurchaseItem {
+  id          String   @id @default(uuid())
+  invoiceId   String
+  description String
+  quantity    Int
+  unitPrice   Float
+  unit        String
+  hsnCode     String
+  amount      Float
+  taxPercent  Float?
+  sgstPercent Float?
+  cgstPercent Float?
+  igstPercent Float?
+  sgst        Float?
+  cgst        Float?
+  igst        Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  purchase    Purchase @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 }
 
 enum TransactionType {
