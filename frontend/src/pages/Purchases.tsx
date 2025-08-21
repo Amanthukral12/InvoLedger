@@ -14,8 +14,8 @@ import { monthNames } from "../constants/months";
 import axios from "axios";
 import Loading from "../components/UI/Loading";
 import { debounce } from "../utils/debounce";
-import { generateExcel } from "../utils/generateExcel";
 import { useAuth } from "../hooks/auth";
+import { generateExcelForPurchase } from "../utils/generateExcelForPurchase";
 const Purchases = () => {
   const [showSideBar, setShowSideBar] = useState(false);
 
@@ -60,7 +60,7 @@ const Purchases = () => {
     }
 
     try {
-      await generateExcel(
+      await generateExcelForPurchase(
         purchasesForCompany,
         selectedMonth,
         selectedYear,
