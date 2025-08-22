@@ -103,7 +103,7 @@ model InvoiceItem {
   id          String   @id @default(uuid())
   invoiceId   String
   description String
-  quantity    Int
+  quantity    Float
   unitPrice   Float
   hsnCode     String
   amount      Float
@@ -181,7 +181,7 @@ model PurchaseItem {
   id          String   @id @default(uuid())
   invoiceId   String
   description String
-  quantity    Int
+  quantity    Float
   unitPrice   Float
   unit        String
   hsnCode     String

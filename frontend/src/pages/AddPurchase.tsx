@@ -100,19 +100,26 @@ const AddPurchase = () => {
         ...currentItem,
         [name]:
           name === "quantity" || name === "unitPrice" || name === "taxPercent"
-            ? Number(value)
+            ? parseFloat(value.toString())
             : value,
       };
 
       const quantity =
-        name === "quantity" ? Number(value) : currentItem.quantity;
+        name === "quantity"
+          ? parseFloat(value.toString())
+          : currentItem.quantity;
       const unitPrice =
-        name === "unitPrice" ? Number(value) : currentItem.unitPrice;
-      updatedItem.amount = Number(quantity * unitPrice);
+        name === "unitPrice"
+          ? parseFloat(value.toString())
+          : currentItem.unitPrice;
+
+      updatedItem.amount = parseFloat((quantity * unitPrice).toFixed(2));
 
       const isSameState = clientState ? company?.state === clientState : false;
       const taxPercent =
-        name === "taxPercent" ? Number(value) : currentItem.taxPercent;
+        name === "taxPercent"
+          ? parseFloat(value.toString())
+          : currentItem.taxPercent;
       if (isSameState) {
         const halfTax = taxPercent / 2;
         updatedItem.cgstPercent = halfTax;
@@ -163,14 +170,15 @@ const AddPurchase = () => {
     const numericFields = ["cartage"];
     setFormData((prev) => ({
       ...prev,
-      [name]: numericFields.includes(name) ? Number(value) : value,
+      [name]: numericFields.includes(name)
+        ? parseFloat(value.toString())
+        : value,
     }));
   };
 
   useEffect(() => {
-    const itemsAmount = purchaseItems.reduce(
-      (sum, item) => sum + item.amount,
-      0
+    const itemsAmount = parseFloat(
+      purchaseItems.reduce((sum, item) => sum + item.amount, 0).toFixed(2)
     );
     let cartageTax = 0;
     if (itemsAmount > 0) {
@@ -215,7 +223,10 @@ const AddPurchase = () => {
     const totalGST = totalCGST + totalSGST + totalIGST;
 
     const totalAmount = Math.round(
-      subTotal + Number(totalSGST) + Number(totalCGST) + Number(totalIGST)
+      subTotal +
+        parseFloat(totalSGST.toFixed(2)) +
+        parseFloat(totalCGST.toFixed(2)) +
+        parseFloat(totalIGST.toFixed(2))
     );
     const amountInWords = inWords(totalAmount)?.toLocaleUpperCase() || "";
 
@@ -324,7 +335,7 @@ const AddPurchase = () => {
                 <input
                   type="date"
                   placeholder="Invoice Date"
-                  name="InvoiceDate"
+                  name="invoiceDate"
                   required
                   value={format(new Date(formData.invoiceDate), "yyyy-MM-dd")}
                   onChange={handleChange}
@@ -596,7 +607,7 @@ const AddPurchase = () => {
                   id="cartage"
                   name="cartage"
                   placeholder="Cartage"
-                  value={Number(formData.cartage)}
+                  value={parseFloat(formData.cartage.toFixed(2))}
                   onChange={handleChange}
                   className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
                 />
