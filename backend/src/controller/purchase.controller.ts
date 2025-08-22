@@ -299,6 +299,9 @@ export const getAllPurchasesForCompany = asyncHandler(
 
     let where: any = {
       companyId,
+      client: {
+        companyId,
+      },
     };
 
     if (searchTerm) {
