@@ -108,6 +108,8 @@ export interface Invoice {
   companyId: number;
   clientId: string;
   shipToPartyId: string | null;
+  ewayBill: boolean;
+  ewayBillNumber: string | null;
   amount: number;
   cartage: number | null;
   subTotal: number;

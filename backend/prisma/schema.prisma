@@ -77,6 +77,8 @@ model Invoice {
   clientId           String
   shipToPartyId      String?
   shipToParty        ShipToParty? @relation(fields: [shipToPartyId], references: [id], onDelete: SetNull)
+  ewayBill           Boolean      @default(false)
+  ewayBillNumber     String?
   amount             Float
   cartage            Float?
   subTotal           Float
