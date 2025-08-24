@@ -52,6 +52,8 @@ const UpdateInvoice = () => {
     invoiceDate: new Date(),
     clientId: "",
     shipToPartyId: "",
+    ewayBill: false,
+    ewayBillNumber: "",
     amount: 0,
     cartage: 0,
     subTotal: 0,
@@ -93,6 +95,8 @@ const UpdateInvoice = () => {
           : new Date(),
         clientId: fetchedInvoice.clientId || "",
         shipToPartyId: fetchedInvoice.shipToPartyId || "",
+        ewayBill: fetchedInvoice.ewayBill || false,
+        ewayBillNumber: fetchedInvoice.ewayBillNumber || "",
         amount: fetchedInvoice.amount || 0,
         cartage: fetchedInvoice.cartage || 0,
         subTotal: fetchedInvoice.subTotal || 0,
@@ -226,6 +230,18 @@ const UpdateInvoice = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+
+    if (e.target instanceof HTMLInputElement && e.target.type === "checkbox") {
+      const isChecked = e.target.checked;
+
+      setFormData((prev) => ({
+        ...prev,
+        [name]: isChecked,
+        ...(name === "ewayBill" && !isChecked ? { ewayBillNumber: "" } : {}),
+      }));
+
+      return;
+    }
 
     const numericFields = ["cartage"];
     setFormData((prev) => ({
@@ -371,7 +387,7 @@ const UpdateInvoice = () => {
         <div className="w-[90%] bg-white shadow-md rounded-lg py-3 mb-4 mt-10 flex flex-col items-center px-1 md:px-0">
           <h1 className="font-bold text-3xl m-3  text-main">Update Invoice</h1>
           <form className="w-full" onSubmit={handleSubmit}>
-            <div className="w-full md:w-4/5 mx-auto flex">
+            <div className="w-full md:w-4/5 mx-auto flex flex-col md:flex-row md:justify-between">
               <div className="w-full md:w-4/5 mx-auto relative mb-4 mr-4">
                 <CiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <input
@@ -439,6 +455,33 @@ const UpdateInvoice = () => {
                 ))}
               </select>
             </div>
+            <div className="w-full md:w-4/5 mx-auto relative mb-4">
+              <input
+                type="checkbox"
+                name="ewayBill"
+                checked={formData.ewayBill}
+                onChange={handleChange}
+                className="mr-2"
+              />
+              <label className="font-semibold text-base">
+                E-Way Bill Available?
+              </label>
+            </div>
+            {formData.ewayBill && (
+              <div className="w-full md:w-4/5 mx-auto relative mb-4">
+                <label className="font-semibold text-sm">
+                  E-Way Bill Number
+                </label>
+                <input
+                  type="text"
+                  name="ewayBillNumber"
+                  required
+                  value={formData.ewayBillNumber}
+                  onChange={handleChange}
+                  className="w-full p-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none mt-1"
+                />
+              </div>
+            )}
             <div className="w-full md:w-4/5 mx-auto relative mb-4">
               <h3 className="text-2xl font-medium mb-2">Invoice Items</h3>
 
