@@ -15,6 +15,8 @@ export const generateExcel = async (
     { header: "Invoice Number", key: "invoiceNumber", width: 15 },
     { header: "Invoice Date", key: "invoiceDate", width: 20 },
     { header: "Client Name", key: "clientName", width: 40 },
+    { header: "E-Way Bill", key: "ewayBill", width: 15 },
+    { header: "E-Way Bill Number", key: "ewayBillNumber", width: 30 },
     { header: "Total Amount", key: "totalAmount", width: 15 },
     { header: "Amount", key: "amount", width: 12 },
     { header: "Cartage", key: "cartage", width: 10 },
@@ -43,6 +45,8 @@ export const generateExcel = async (
         invoiceDate:
           index === 0 ? new Date(invoice.invoiceDate).toLocaleDateString() : "",
         clientName: index === 0 ? invoice.client.name : "",
+        ewayBill: index === 0 ? (invoice.ewayBill ? "Yes" : "No") : "",
+        ewayBillNumber: index === 0 ? invoice.ewayBillNumber : "",
         totalAmount: index === 0 ? invoice.totalAmount : "",
         amount: index === 0 ? invoice.amount : "",
         cartage: index === 0 ? invoice.cartage : "",
