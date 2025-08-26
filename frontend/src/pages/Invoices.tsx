@@ -63,17 +63,20 @@ const Invoices = () => {
     invoiceNumber,
     clientName,
     invoiceType,
+    actionType,
   }: {
     id: string;
     invoiceNumber: number;
     clientName: string;
     invoiceType: string;
+    actionType: string;
   }) => {
     await generateInvoiceMutation.mutateAsync({
       id,
       invoiceNumber,
       clientName,
       invoiceType,
+      actionType,
     });
   };
 
@@ -204,7 +207,7 @@ const Invoices = () => {
                 className="bg-white my-1 rounded-lg p-2 text-main shadow-md flex flex-col justify-between font-medium"
               >
                 <div className="flex w-full justify-between">
-                  <div className="leading-8">
+                  <div className="leading-8 w-full">
                     <p>Invoice Number: {invoice.invoiceNumber}</p>
                     <p>Client Name: {invoice.client.name}</p>
                     <p>
@@ -220,19 +223,38 @@ const Invoices = () => {
                       </select>
                     </div>
 
-                    <button
-                      className="text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer block my-2 mx-auto"
-                      onClick={() => {
-                        handleDownload({
-                          id: invoice.id,
-                          invoiceNumber: invoice.invoiceNumber,
-                          clientName: invoice.client.name,
-                          invoiceType,
-                        });
-                      }}
-                    >
-                      Download Invoice
-                    </button>
+                    <div className="flex flex-col md:flex-row md:space-x-4">
+                      <button
+                        className="text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer block my-2"
+                        onClick={() => {
+                          handleDownload({
+                            id: invoice.id,
+                            invoiceNumber: invoice.invoiceNumber,
+                            clientName: invoice.client.name,
+                            invoiceType,
+                            actionType: "download",
+                          });
+                          setInvoiceType("ORIGINAL");
+                        }}
+                      >
+                        Download Invoice
+                      </button>
+                      <button
+                        className="text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer block my-2"
+                        onClick={() => {
+                          handleDownload({
+                            id: invoice.id,
+                            invoiceNumber: invoice.invoiceNumber,
+                            clientName: invoice.client.name,
+                            invoiceType,
+                            actionType: "print",
+                          });
+                          setInvoiceType("ORIGINAL");
+                        }}
+                      >
+                        Print Invoice
+                      </button>
+                    </div>
                   </div>
                   <div className="flex items-center">
                     <FaRegEdit

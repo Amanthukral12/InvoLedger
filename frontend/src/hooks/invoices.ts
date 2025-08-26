@@ -116,9 +116,16 @@ export const useInvoice = () => {
       invoiceNumber: number;
       clientName: string;
       invoiceType: string;
+      actionType: string;
     }
   >({
-    mutationFn: async ({ id, invoiceNumber, clientName, invoiceType }) => {
+    mutationFn: async ({
+      id,
+      invoiceNumber,
+      clientName,
+      invoiceType,
+      actionType,
+    }) => {
       const response = await api.post(
         `/invoice/generate-invoice/${id}/`,
         { invoiceType },
@@ -141,14 +148,25 @@ export const useInvoice = () => {
       const blob = new Blob([response.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
 
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", filename);
-      document.body.appendChild(link);
-      link.click();
+      if (actionType === "download") {
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
 
-      link.remove();
-      window.URL.revokeObjectURL(url);
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      } else {
+        const iframe = document.createElement("iframe");
+        iframe.style.display = "none";
+        iframe.src = url;
+
+        document.body.appendChild(iframe);
+        iframe.onload = () => {
+          iframe.contentWindow?.print();
+        };
+      }
     },
   });
 
