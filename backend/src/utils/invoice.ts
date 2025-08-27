@@ -97,7 +97,11 @@ export const generateInvoicePdf = (
     );
   }
   doc.text(`Place of Supply: ${invoiceData.placeOfSupply}`, 350, doc.y);
-  doc.text(`E-way Bill Number: ${invoiceData.ewayBillNumber}`, 350, doc.y);
+  doc.text(
+    `E-way Bill Number: ${invoiceData.ewayBillNumber !== null ? invoiceData.ewayBillNumber : ""}`,
+    350,
+    doc.y
+  );
 
   if (invoiceData.transportMode && invoiceData.vehicleNumber) {
     doc.moveDown(1);
