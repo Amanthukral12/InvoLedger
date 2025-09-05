@@ -157,6 +157,32 @@ export const useInvoice = () => {
 
         link.remove();
         window.URL.revokeObjectURL(url);
+      } else if (actionType === "share") {
+        const canShareFile =
+          navigator.canShare &&
+          navigator.canShare({
+            files: [new File([blob], filename, { type: "application/pdf" })],
+          });
+        if (canShareFile) {
+          try {
+            await navigator.share({
+              title: `Invoice ${invoiceNumber}`,
+              text: `Here is your invoice for ${clientName}`,
+              files: [new File([blob], filename, { type: "application/pdf" })],
+            });
+          } catch (err) {
+            console.error("Sharing failed", err);
+          }
+        } else {
+          const link = document.createElement("a");
+          link.href = url;
+          link.setAttribute("download", filename);
+          document.body.appendChild(link);
+          link.click();
+
+          link.remove();
+          window.URL.revokeObjectURL(url);
+        }
       } else {
         const iframe = document.createElement("iframe");
         iframe.style.display = "none";

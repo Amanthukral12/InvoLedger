@@ -200,32 +200,37 @@ const Invoices = () => {
           {totalCount === 0 && (
             <p className="text-lg font-semibold">No Invoices found</p>
           )}
-          <div className="w-[90%] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-8">
+          <div className="w-[90%] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 mb-10">
             {invoices.map((invoice: CustomInvoiceData) => (
               <div
                 key={invoice.id}
-                className="bg-white my-1 rounded-lg p-2 text-main shadow-md flex flex-col justify-between font-medium"
+                className="bg-white rounded-2xl p-3 shadow-md flex flex-col justify-between border border-gray-100 hover:shadow-lg transition"
               >
-                <div className="flex w-full justify-between">
-                  <div className="leading-8 w-full">
-                    <p>Invoice Number: {invoice.invoiceNumber}</p>
-                    <p>Client Name: {invoice.client.name}</p>
+                <div className="flex w-full gap-2">
+                  <div className="w-4/5 leading-7 text-gray-700 text-sm md:text-base">
+                    <p className="font-semibold text-gray-800">
+                      Invoice #: {invoice.invoiceNumber}
+                    </p>
+                    <p>Client: {invoice.client.name}</p>
                     <p>
-                      Invoice Date:{" "}
+                      Date:{" "}
                       {format(new Date(invoice.invoiceDate), "dd/MM/yyyy")}
                     </p>
-                    <div>
-                      <label>Invoice Type: </label>
-                      <select onChange={(e) => setInvoiceType(e.target.value)}>
+                    <div className="mt-2">
+                      <label className="font-medium mr-2">Type:</label>
+                      <select
+                        onChange={(e) => setInvoiceType(e.target.value)}
+                        className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-main focus:outline-none"
+                      >
                         <option value="ORIGINAL">ORIGINAL</option>
                         <option value="DUPLICATE">DUPLICATE</option>
                         <option value="OFFICE COPY">OFFICE COPY</option>
                       </select>
                     </div>
 
-                    <div className="flex flex-col md:flex-row md:space-x-4">
+                    <div className="mt-4 flex flex-col space-y-2">
                       <button
-                        className="text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer block my-2"
+                        className="w-full text-sm font-semibold text-white bg-main px-4 py-2 rounded-lg hover:opacity-90 transition"
                         onClick={() => {
                           handleDownload({
                             id: invoice.id,
@@ -237,35 +242,53 @@ const Invoices = () => {
                           setInvoiceType("ORIGINAL");
                         }}
                       >
-                        Download Invoice
+                        Download
                       </button>
-                      <button
-                        className="text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer block my-2"
-                        onClick={() => {
-                          handleDownload({
-                            id: invoice.id,
-                            invoiceNumber: invoice.invoiceNumber,
-                            clientName: invoice.client.name,
-                            invoiceType,
-                            actionType: "print",
-                          });
-                          setInvoiceType("ORIGINAL");
-                        }}
-                      >
-                        Print Invoice
-                      </button>
+
+                      <div className="flex space-x-2">
+                        <button
+                          className="w-1/2 text-sm font-semibold text-white bg-main px-4 py-2 rounded-lg hover:opacity-90 transition"
+                          onClick={() => {
+                            handleDownload({
+                              id: invoice.id,
+                              invoiceNumber: invoice.invoiceNumber,
+                              clientName: invoice.client.name,
+                              invoiceType,
+                              actionType: "print",
+                            });
+                            setInvoiceType("ORIGINAL");
+                          }}
+                        >
+                          Print
+                        </button>
+                        <button
+                          className="w-1/2 text-sm font-semibold text-white bg-main px-4 py-2 rounded-lg hover:opacity-90 transition"
+                          onClick={() => {
+                            handleDownload({
+                              id: invoice.id,
+                              invoiceNumber: invoice.invoiceNumber,
+                              clientName: invoice.client.name,
+                              invoiceType,
+                              actionType: "share",
+                            });
+                            setInvoiceType("ORIGINAL");
+                          }}
+                        >
+                          Share
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center">
+                  <div className="flex w-1/5 items-center justify-center gap-x-2 text-gray-500">
                     <FaRegEdit
-                      className="text-2xl mx-2"
+                      className="text-2xl cursor-pointer hover:text-main transition"
                       onClick={(e) => {
                         e.preventDefault();
                         navigate(`/companyInvoices/update/${invoice.id}`);
                       }}
                     />
                     <MdDelete
-                      className="text-2xl mx-2"
+                      className="text-2xl cursor-pointer hover:text-red-500 transition"
                       onClick={(e) => {
                         e.preventDefault();
                         deleteHandler(invoice.id);
@@ -276,6 +299,7 @@ const Invoices = () => {
               </div>
             ))}
           </div>
+
           {totalCount > 0 && (
             <div className="flex justify-center items-center gap-4 my-6">
               <button
