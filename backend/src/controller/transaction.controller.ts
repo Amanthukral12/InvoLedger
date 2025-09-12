@@ -163,6 +163,16 @@ export const getAllTransactionsForCompanyForMonth = asyncHandler(
           lte: endDate,
         },
       },
+      orderBy: {
+        date: "desc",
+      },
+      include: {
+        client: {
+          select: {
+            name: true,
+          },
+        },
+      },
     });
     return res
       .status(200)
