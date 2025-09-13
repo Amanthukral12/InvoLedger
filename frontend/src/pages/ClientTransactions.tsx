@@ -1,36 +1,31 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import ClientHeader from "../components/UI/ClientHeader";
 import { useTransaction } from "../hooks/transactions";
 import Sidebar from "../components/UI/Sidebar";
 import NavigationBar from "../components/UI/NavigationBar";
 import { IoMenu } from "react-icons/io5";
-import { Client, CustomTransactionData } from "../types/types";
+import useTransactionStore from "../store/transactionStore";
+import { CustomTransactionData } from "../types/types";
 import { format } from "date-fns";
 import { MdDelete } from "react-icons/md";
 import axios from "axios";
+import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import CompanyHeader from "../components/UI/CompanyHeader";
-import { useClient } from "../hooks/client";
-import { monthNames } from "../constants/months";
-import { useFilterStore } from "../store/filterStore";
 
 const Transactions = () => {
   const [showSideBar, setShowSideBar] = useState(false);
-  const { selectedYear, setYear, selectedMonth, setMonth } = useFilterStore();
-  const { clientQuery } = useClient();
+  const { id: clientId } = useParams();
+  const { selectedYear, setSelectedYear } = useTransactionStore();
   const {
-    getAllTransactionsForCompanyForMonth,
+    transactionQuery,
     deleteTransactionMutation,
     createTransactionMutation,
   } = useTransaction();
-  const transactions = getAllTransactionsForCompanyForMonth.data ?? [];
-  const clients = React.useMemo(
-    () => clientQuery.data ?? [],
-    [clientQuery.data]
-  );
+  const transactions = transactionQuery.data ?? [];
 
   const [formData, setFormData] = useState<{
     date: Date;
-    clientId: string;
+
     description: string;
     bankName: string;
     amount: number;
@@ -39,7 +34,6 @@ const Transactions = () => {
     date: new Date(),
     amount: 0,
     type: "CREDIT",
-    clientId: "",
     description: "",
     bankName: "",
   });
@@ -81,13 +75,12 @@ const Transactions = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-      if (!formData.clientId) {
+      if (!clientId) {
         toast.error("Client ID is missing.");
         return;
       }
-
       await createTransactionMutation.mutateAsync({
-        clientId: formData.clientId,
+        clientId,
         formData,
       });
     } catch (error) {
@@ -102,7 +95,6 @@ const Transactions = () => {
         date: new Date(),
         amount: 0,
         type: "CREDIT",
-        clientId: "",
         description: "",
         bankName: "",
       });
@@ -123,12 +115,10 @@ const Transactions = () => {
       </div>
       <Sidebar shown={showSideBar} close={() => setShowSideBar(!showSideBar)} />
       <section className="w-full lg:w-4/5 overflow-y-auto h-full mb-16">
-        <CompanyHeader />
+        <ClientHeader />
         <div className="mx-3 mb-4">
           <div className="flex justify-between mb-4 mx-0 lg:mx-2">
-            <h3 className="text-lg lg:text-2xl font-semibold mb-4">
-              Transactions
-            </h3>
+            <h3 className="text-lg lg:text-2xl font-semibold mb-4">Ledger</h3>
           </div>
           <form
             className="w-full md:w-4/5 flex flex-col mb-4 justify-between p-2 md:mx-auto"
@@ -141,20 +131,7 @@ const Transactions = () => {
               className="bg-white p-2 mb-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base"
               value={format(new Date(formData.date), "yyyy-MM-dd")}
             />
-            <select
-              name="clientId"
-              required
-              value={formData.clientId}
-              onChange={handleChange}
-              className="bg-white p-2 mb-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none transition text-base"
-            >
-              <option value="">Select Client</option>
-              {clients?.map((client: Client) => (
-                <option key={client.id} value={client.id}>
-                  {client.name} - {client.GSTIN}
-                </option>
-              ))}
-            </select>
+
             <input
               type="text"
               placeholder="Description"
@@ -195,18 +172,7 @@ const Transactions = () => {
           <div className="flex justify-center mb-3">
             <select
               className=" mr-3 bg-white p-2 rounded-lg text-lg font-medium focus:border-none focus:outline-none"
-              onChange={(e) => setMonth(Number(e.target.value))}
-              value={selectedMonth}
-            >
-              {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
-                <option key={month} value={month}>
-                  {monthNames[month - 1]}
-                </option>
-              ))}
-            </select>
-            <select
-              className=" mr-3 bg-white p-2 rounded-lg text-lg font-medium focus:border-none focus:outline-none"
-              onChange={(e) => setYear(Number(e.target.value))}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
               value={selectedYear}
             >
               {Array.from(
@@ -219,7 +185,6 @@ const Transactions = () => {
               ))}
             </select>
           </div>
-
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-lg border-separate border-spacing-y-2">
               <thead>
