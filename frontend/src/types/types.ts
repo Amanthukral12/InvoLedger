@@ -187,3 +187,17 @@ export interface CustomTransactionData {
   date: Date;
   description: string | null;
 }
+
+export interface TransactionDataGroupedByClient {
+  clientName: string;
+  total: number;
+  transactions: {
+    id: string;
+    amount: number;
+    type: string;
+    bankName: string | null;
+    date: string;
+    description: string | null;
+    clientId: string;
+  }[];
+}

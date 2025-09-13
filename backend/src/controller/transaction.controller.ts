@@ -201,11 +201,12 @@ export const getAllTransactionsForCompanyForMonthGroupedByClient = asyncHandler(
         id: number;
         amount: number;
         date: Date;
+        bankName: string | null;
         clientId: string;
         clientName: string;
       }[]
     >`
-    SELECT t.id, t.amount, t.date, t.type, COALESCE(t.description, '') as description, t."clientId", c."name" AS "clientName"
+    SELECT t.id, t.amount, t."bankName", t.date, t.type, COALESCE(t.description, '') as description, t."clientId", c."name" AS "clientName"
     FROM "Transaction" t
     JOIN "Client" c on t."clientId" = c.id
     where t."companyId" = ${Number(companyId)} AND t.date >= ${startDate} AND t.date < ${endDate}

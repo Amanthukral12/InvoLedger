@@ -12,21 +12,29 @@ import CompanyHeader from "../components/UI/CompanyHeader";
 import { useClient } from "../hooks/client";
 import { monthNames } from "../constants/months";
 import { useFilterStore } from "../store/filterStore";
+import { useAuth } from "../hooks/auth";
+import { generateExcelForTransactions } from "../utils/generateExcelForTransactions";
 
 const Transactions = () => {
   const [showSideBar, setShowSideBar] = useState(false);
   const { selectedYear, setYear, selectedMonth, setMonth } = useFilterStore();
+  const { company } = useAuth();
   const { clientQuery } = useClient();
   const {
     getAllTransactionsForCompanyForMonth,
+    getAllTransactionsForCompanyForMonthGroupedByClient,
     deleteTransactionMutation,
     createTransactionMutation,
   } = useTransaction();
   const transactions = getAllTransactionsForCompanyForMonth.data ?? [];
+  const transactionsGroupedByClient =
+    getAllTransactionsForCompanyForMonthGroupedByClient.data ?? [];
   const clients = React.useMemo(
     () => clientQuery.data ?? [],
     [clientQuery.data]
   );
+
+  const companyName = company?.name || "";
 
   const [formData, setFormData] = useState<{
     date: Date;
@@ -59,6 +67,27 @@ const Transactions = () => {
       } else {
         console.error("Unexpected error:", error);
       }
+    }
+  };
+
+  console.log(transactionsGroupedByClient);
+
+  const handleExcelExport = async () => {
+    if (!getAllTransactionsForCompanyForMonth || transactions.length === 0) {
+      alert("No invoices data available for export");
+      return;
+    }
+
+    try {
+      await generateExcelForTransactions(
+        transactionsGroupedByClient,
+        selectedMonth,
+        selectedYear,
+        companyName
+      );
+    } catch (error) {
+      console.error("Error generating Excel:", error);
+      alert("Error generating Excel file");
     }
   };
 
@@ -129,6 +158,19 @@ const Transactions = () => {
             <h3 className="text-lg lg:text-2xl font-semibold mb-4">
               Transactions
             </h3>
+            <button
+              onClick={handleExcelExport}
+              className="text-lg font-semibold text-white bg-main px-8 py-1 rounded-xl cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
+              disabled={
+                getAllTransactionsForCompanyForMonth.isLoading ||
+                !getAllTransactionsForCompanyForMonth ||
+                transactions.length === 0
+              }
+            >
+              {getAllTransactionsForCompanyForMonth.isLoading
+                ? "Loading..."
+                : "Export to Excel"}
+            </button>
           </div>
           <form
             className="w-full md:w-4/5 flex flex-col mb-4 justify-between p-2 md:mx-auto"
