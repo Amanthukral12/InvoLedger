@@ -70,8 +70,6 @@ const Transactions = () => {
     }
   };
 
-  console.log(transactionsGroupedByClient);
-
   const handleExcelExport = async () => {
     if (!getAllTransactionsForCompanyForMonth || transactions.length === 0) {
       alert("No invoices data available for export");
