@@ -5,3 +5,8 @@
     --color-secondary: #7c3aed;
     --color-main: #1B9B85
 }
+
+::-webkit-scrollbar {
+  width: 0; /* Remove scrollbar space */
+  background: transparent; /* Optional: just make scrollbar invisible */
+}

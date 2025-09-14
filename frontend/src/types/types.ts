@@ -170,6 +170,34 @@ export interface Transaction {
   companyId: number;
   amount: number;
   type: "CREDIT" | "DEBIT";
+  bankName: string;
   date: Date;
   description: string | null;
+}
+export interface CustomTransactionData {
+  id: string;
+  clientId: string;
+  client: {
+    name: string;
+  };
+  companyId: number;
+  amount: number;
+  type: "CREDIT" | "DEBIT";
+  bankName: string;
+  date: Date;
+  description: string | null;
+}
+
+export interface TransactionDataGroupedByClient {
+  clientName: string;
+  total: number;
+  transactions: {
+    id: string;
+    amount: number;
+    type: string;
+    bankName: string | null;
+    date: string;
+    description: string | null;
+    clientId: string;
+  }[];
 }
