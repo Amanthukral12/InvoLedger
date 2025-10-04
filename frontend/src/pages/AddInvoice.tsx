@@ -306,7 +306,6 @@ const AddInvoice = () => {
       navigate("/companyInvoices");
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.log(error.response?.data.message);
         toast.error(error.response?.data.message);
       } else {
         console.error("Unexpected error:", error);

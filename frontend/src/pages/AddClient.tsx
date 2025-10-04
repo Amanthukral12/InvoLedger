@@ -10,6 +10,7 @@ import { TfiEmail } from "react-icons/tfi";
 import { useClient } from "../hooks/client";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { toast } from "react-toastify";
 const AddClient = () => {
   const [showSideBar, setShowSideBar] = useState(false);
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ const AddClient = () => {
       navigate("/companyClients");
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.log(error.response?.data.message);
+        toast.error(error.response?.data.message);
       } else {
         console.error("Unexpected error:", error);
       }

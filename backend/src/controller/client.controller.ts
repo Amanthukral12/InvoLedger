@@ -1,11 +1,12 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiError } from "../utils/ApiError";
 import prisma from "../db/db";
 import { ApiResponse } from "../utils/ApiResponse";
+import { Prisma } from "@prisma/client";
 
 export const createClient = asyncHandler(
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     if (!req.company) {
       throw new ApiError(401, "Unauthorized Access. Please login again", [
         "Unauthorized Access. Please login again",
@@ -16,26 +17,42 @@ export const createClient = asyncHandler(
     const { name, address, GSTIN, email, phonenumber, state } = req.body;
 
     if (!name || !address || !GSTIN || !state) {
-      throw new ApiError(400, "Please fill all the fields", [
-        "Please fill all the fields",
-      ]);
+      return next(
+        new ApiError(400, "Please fill all the fields", [
+          "Please fill all the fields",
+        ])
+      );
     }
 
-    const client = await prisma.client.create({
-      data: {
-        name,
-        address,
-        GSTIN,
-        email,
-        phonenumber,
-        state,
-        companyId,
-      },
-    });
+    try {
+      const client = await prisma.client.create({
+        data: {
+          name,
+          address,
+          GSTIN,
+          email,
+          phonenumber,
+          state,
+          companyId,
+        },
+      });
 
-    return res
-      .status(201)
-      .json(new ApiResponse(201, client, "Client created successfully"));
+      return res
+        .status(201)
+        .json(new ApiResponse(201, client, "Client created successfully"));
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        return next(
+          new ApiError(400, "Client with this GSTIN/email already exists", [
+            "Client with this GSTIN/email already exists",
+          ])
+        );
+      }
+      return next(error);
+    }
   }
 );
 
@@ -67,7 +84,7 @@ export const deleteClient = asyncHandler(
 );
 
 export const updateClient = asyncHandler(
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     if (!req.company) {
       throw new ApiError(401, "Unauthorized Access. Please login again", [
         "Unauthorized Access. Please login again",
@@ -83,24 +100,38 @@ export const updateClient = asyncHandler(
     });
 
     if (!clientExists) {
-      throw new ApiError(404, "Client not found", ["Client not found"]);
+      return next(new ApiError(404, "Client not found", ["Client not found"]));
     }
 
-    const client = await prisma.client.update({
-      where: { id: clientExists.id },
-      data: {
-        name: name !== undefined ? name : undefined,
-        address: address !== undefined ? address : undefined,
-        GSTIN: GSTIN !== undefined ? GSTIN : undefined,
-        email: email !== undefined ? email : undefined,
-        phonenumber: phonenumber !== undefined ? phonenumber : undefined,
-        state: state !== undefined ? state : undefined,
-      },
-    });
+    try {
+      const client = await prisma.client.update({
+        where: { id: clientExists.id },
+        data: {
+          name: name !== undefined ? name : undefined,
+          address: address !== undefined ? address : undefined,
+          GSTIN: GSTIN !== undefined ? GSTIN : undefined,
+          email: email !== undefined ? email : undefined,
+          phonenumber: phonenumber !== undefined ? phonenumber : undefined,
+          state: state !== undefined ? state : undefined,
+        },
+      });
 
-    return res
-      .status(200)
-      .json(new ApiResponse(200, client, "Client updated successfully"));
+      return res
+        .status(200)
+        .json(new ApiResponse(200, client, "Client updated successfully"));
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        return next(
+          new ApiError(400, "Client with this GSTIN/email already exists", [
+            "Client with this GSTIN/email already exists",
+          ])
+        );
+      }
+      return next(error);
+    }
   }
 );
 

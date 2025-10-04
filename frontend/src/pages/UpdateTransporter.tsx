@@ -13,6 +13,7 @@ import { STATES } from "../constants/state";
 import { TbBuildingEstate } from "react-icons/tb";
 import { CiUser } from "react-icons/ci";
 import Loading from "../components/UI/Loading";
+import { toast } from "react-toastify";
 
 const UpdateTransporter = () => {
   const { id } = useParams();
@@ -71,7 +72,7 @@ const UpdateTransporter = () => {
       navigate("/companyTransporters");
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.log(error.response?.data.message);
+        toast.error(error.response?.data.message);
       } else {
         console.error("Unexpected error:", error);
       }

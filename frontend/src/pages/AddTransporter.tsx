@@ -9,6 +9,7 @@ import Sidebar from "../components/UI/Sidebar";
 import NavigationBar from "../components/UI/NavigationBar";
 import { IoMenu } from "react-icons/io5";
 import { IoMdArrowBack } from "react-icons/io";
+import { toast } from "react-toastify";
 
 const AddTransporter = () => {
   const [showSideBar, setShowSideBar] = useState(false);
@@ -37,7 +38,7 @@ const AddTransporter = () => {
       navigate("/companyTransporters");
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.log(error.response?.data.message);
+        toast.error(error.response?.data.message);
       } else {
         console.error("Unexpected error:", error);
       }

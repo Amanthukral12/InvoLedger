@@ -14,6 +14,7 @@ import { IoMenu } from "react-icons/io5";
 import NavigationBar from "../components/UI/NavigationBar";
 import axios from "axios";
 import Loading from "../components/UI/Loading";
+import { toast } from "react-toastify";
 
 const UpdateClient = () => {
   const { id } = useParams();
@@ -73,7 +74,7 @@ const UpdateClient = () => {
       navigate("/companyClients");
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.log(error.response?.data.message);
+        toast.error(error.response?.data.message);
       } else {
         console.error("Unexpected error:", error);
       }
