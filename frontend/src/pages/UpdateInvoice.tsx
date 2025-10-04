@@ -20,6 +20,7 @@ import axios from "axios";
 import { useInvoice } from "../hooks/invoices";
 import Loading from "../components/UI/Loading";
 import { roundCurrency } from "../utils/roundCurrency";
+import { toast } from "react-toastify";
 
 const UpdateInvoice = () => {
   const { id } = useParams();
@@ -362,7 +363,7 @@ const UpdateInvoice = () => {
       navigate("/companyInvoices");
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.log(error.response?.data.message);
+        toast.error(error.response?.data.message);
       } else {
         console.error("Unexpected error:", error);
       }

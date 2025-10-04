@@ -1,13 +1,14 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiError } from "../utils/ApiError";
 import prisma from "../db/db";
 import { InvoiceItem } from "../types/types";
 import { ApiResponse } from "../utils/ApiResponse";
 import { generateInvoicePdf } from "../utils/invoice";
+import { Prisma } from "@prisma/client";
 
 export const createInvoice = asyncHandler(
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     if (!req.company) {
       throw new ApiError(401, "Unauthorized Access. Please login again", [
         "Unauthorized Access. Please login again",
@@ -38,57 +39,70 @@ export const createInvoice = asyncHandler(
 
     const cleanedShipToPartyId = shipToPartyId === "" ? null : shipToPartyId;
 
-    const invoice = await prisma.$transaction(async (prisma) => {
-      const newInvoice = await prisma.invoice.create({
-        data: {
-          invoiceNumber,
-          invoiceDate,
-          companyId,
-          clientId,
-          shipToPartyId: cleanedShipToPartyId,
-          ewayBill,
-          ewayBillNumber,
-          amount,
-          cartage,
-          subTotal,
-          totalIgst,
-          totalCgst,
-          totalSgst,
-          totalAmount,
-          totalAmountInWords,
-          reverseCharge,
-          transportMode,
-          vehicleNumber,
-          placeOfSupply,
-          invoiceItems: {
-            create: invoiceItems.map((item: InvoiceItem) => ({
-              description: item.description,
-              quantity: item.quantity,
-              unitPrice: item.unitPrice,
-              hsnCode: item.hsnCode,
-              amount: item.amount,
-              sgst: item.sgst,
-              cgst: item.cgst,
-              igst: item.igst,
-              sgstPercent: item.sgstPercent,
-              cgstPercent: item.cgstPercent,
-              igstPercent: item.igstPercent,
-              taxPercent: item.taxPercent,
-            })),
+    try {
+      const invoice = await prisma.$transaction(async (prisma) => {
+        const newInvoice = await prisma.invoice.create({
+          data: {
+            invoiceNumber,
+            invoiceDate,
+            companyId,
+            clientId,
+            shipToPartyId: cleanedShipToPartyId,
+            ewayBill,
+            ewayBillNumber,
+            amount,
+            cartage,
+            subTotal,
+            totalIgst,
+            totalCgst,
+            totalSgst,
+            totalAmount,
+            totalAmountInWords,
+            reverseCharge,
+            transportMode,
+            vehicleNumber,
+            placeOfSupply,
+            invoiceItems: {
+              create: invoiceItems.map((item: InvoiceItem) => ({
+                description: item.description,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                hsnCode: item.hsnCode,
+                amount: item.amount,
+                sgst: item.sgst,
+                cgst: item.cgst,
+                igst: item.igst,
+                sgstPercent: item.sgstPercent,
+                cgstPercent: item.cgstPercent,
+                igstPercent: item.igstPercent,
+                taxPercent: item.taxPercent,
+              })),
+            },
           },
-        },
-        include: {
-          invoiceItems: true,
-          client: true,
-          shipToParty: true,
-          company: true,
-        },
+          include: {
+            invoiceItems: true,
+            client: true,
+            shipToParty: true,
+            company: true,
+          },
+        });
+        return newInvoice;
       });
-      return newInvoice;
-    });
-    return res
-      .status(201)
-      .json(new ApiResponse(201, invoice, "Invoice added successfully"));
+      return res
+        .status(201)
+        .json(new ApiResponse(201, invoice, "Invoice added successfully"));
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === "P2002") {
+          return next(
+            new ApiError(400, "Invoice number already exists", [
+              "Invoice number already exists. Please use a different invoice number.",
+            ])
+          );
+        }
+      }
+      return next(error);
+    }
   }
 );
 
@@ -163,7 +177,7 @@ export const getInvoiceById = asyncHandler(
 );
 
 export const updateInvoice = asyncHandler(
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     if (!req.company) {
       throw new ApiError(401, "Unauthorized Access. Please login again", [
         "Unauthorized Access. Please login again",
@@ -209,58 +223,76 @@ export const updateInvoice = asyncHandler(
 
     const cleanedShipToPartyId = shipToPartyId === "" ? null : shipToPartyId;
 
-    const updatedInvoice = await prisma.invoice.update({
-      where: { id: invoiceExists.id, companyId: invoiceExists.companyId },
-      data: {
-        invoiceNumber: invoiceNumber !== undefined ? invoiceNumber : undefined,
-        invoiceDate: invoiceDate !== undefined ? invoiceDate : undefined,
-        clientId: clientId !== undefined ? clientId : undefined,
-        shipToPartyId:
-          shipToPartyId !== undefined ? cleanedShipToPartyId : undefined,
-        ewayBill: ewayBill !== undefined ? ewayBill : undefined,
-        ewayBillNumber:
-          ewayBillNumber !== undefined ? ewayBillNumber : undefined,
-        amount: amount !== undefined ? amount : undefined,
-        cartage: cartage !== undefined ? cartage : undefined,
-        subTotal: subTotal !== undefined ? subTotal : undefined,
-        totalCgst: totalCgst !== undefined ? totalCgst : undefined,
-        totalSgst: totalSgst !== undefined ? totalSgst : undefined,
-        totalIgst: totalIgst !== undefined ? totalIgst : undefined,
-        totalAmount: totalAmount !== undefined ? totalAmount : undefined,
-        totalAmountInWords:
-          totalAmountInWords !== undefined ? totalAmountInWords : undefined,
-        reverseCharge: reverseCharge !== undefined ? reverseCharge : undefined,
-        transportMode: transportMode !== undefined ? transportMode : undefined,
-        vehicleNumber: vehicleNumber !== undefined ? vehicleNumber : undefined,
-        placeOfSupply: placeOfSupply !== undefined ? placeOfSupply : undefined,
-        invoiceItems:
-          invoiceItems !== undefined
-            ? {
-                deleteMany: {},
-                create: invoiceItems.map((item: InvoiceItem) => ({
-                  description: item.description,
-                  quantity: item.quantity,
-                  unitPrice: item.unitPrice,
-                  hsnCode: item.hsnCode,
-                  amount: item.amount,
-                  taxPercent: item.taxPercent,
-                  sgstPercent: item.sgstPercent,
-                  cgstPercent: item.cgstPercent,
-                  igstPercent: item.igstPercent,
-                  sgst: item.sgst,
-                  cgst: item.cgst,
-                  igst: item.igst,
-                })),
-              }
-            : undefined,
-      },
-    });
+    try {
+      const updatedInvoice = await prisma.invoice.update({
+        where: { id: invoiceExists.id, companyId: invoiceExists.companyId },
+        data: {
+          invoiceNumber:
+            invoiceNumber !== undefined ? invoiceNumber : undefined,
+          invoiceDate: invoiceDate !== undefined ? invoiceDate : undefined,
+          clientId: clientId !== undefined ? clientId : undefined,
+          shipToPartyId:
+            shipToPartyId !== undefined ? cleanedShipToPartyId : undefined,
+          ewayBill: ewayBill !== undefined ? ewayBill : undefined,
+          ewayBillNumber:
+            ewayBillNumber !== undefined ? ewayBillNumber : undefined,
+          amount: amount !== undefined ? amount : undefined,
+          cartage: cartage !== undefined ? cartage : undefined,
+          subTotal: subTotal !== undefined ? subTotal : undefined,
+          totalCgst: totalCgst !== undefined ? totalCgst : undefined,
+          totalSgst: totalSgst !== undefined ? totalSgst : undefined,
+          totalIgst: totalIgst !== undefined ? totalIgst : undefined,
+          totalAmount: totalAmount !== undefined ? totalAmount : undefined,
+          totalAmountInWords:
+            totalAmountInWords !== undefined ? totalAmountInWords : undefined,
+          reverseCharge:
+            reverseCharge !== undefined ? reverseCharge : undefined,
+          transportMode:
+            transportMode !== undefined ? transportMode : undefined,
+          vehicleNumber:
+            vehicleNumber !== undefined ? vehicleNumber : undefined,
+          placeOfSupply:
+            placeOfSupply !== undefined ? placeOfSupply : undefined,
+          invoiceItems:
+            invoiceItems !== undefined
+              ? {
+                  deleteMany: {},
+                  create: invoiceItems.map((item: InvoiceItem) => ({
+                    description: item.description,
+                    quantity: item.quantity,
+                    unitPrice: item.unitPrice,
+                    hsnCode: item.hsnCode,
+                    amount: item.amount,
+                    taxPercent: item.taxPercent,
+                    sgstPercent: item.sgstPercent,
+                    cgstPercent: item.cgstPercent,
+                    igstPercent: item.igstPercent,
+                    sgst: item.sgst,
+                    cgst: item.cgst,
+                    igst: item.igst,
+                  })),
+                }
+              : undefined,
+        },
+      });
 
-    res
-      .status(200)
-      .json(
-        new ApiResponse(200, updatedInvoice, "Invoice updated successfully")
-      );
+      res
+        .status(200)
+        .json(
+          new ApiResponse(200, updatedInvoice, "Invoice updated successfully")
+        );
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === "P2002") {
+          return next(
+            new ApiError(400, "Invoice number already exists", [
+              "Invoice number already exists. Please use a different invoice number.",
+            ])
+          );
+        }
+      }
+      return next(error);
+    }
   }
 );
 

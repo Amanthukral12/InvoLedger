@@ -1,11 +1,12 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiError } from "../utils/ApiError";
 import prisma from "../db/db";
 import { ApiResponse } from "../utils/ApiResponse";
+import { Prisma } from "@prisma/client";
 
 export const createTransporter = asyncHandler(
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     if (!req.company) {
       throw new ApiError(401, "Unauthorized Access. Please login again", [
         "Unauthorized Access. Please login again",
@@ -15,25 +16,41 @@ export const createTransporter = asyncHandler(
     const { name, address, GSTIN, state } = req.body;
 
     if (!name || !address || !GSTIN || !state) {
-      throw new ApiError(400, "Please fill all the fields", [
-        "Please fill all the fields",
-      ]);
+      return next(
+        new ApiError(400, "Please fill all the fields", [
+          "Please fill all the fields",
+        ])
+      );
     }
 
-    const transporter = await prisma.shipToParty.create({
-      data: {
-        name,
-        address,
-        GSTIN,
-        state,
-        companyId,
-      },
-    });
-    return res
-      .status(201)
-      .json(
-        new ApiResponse(201, transporter, "Transported created successfully")
-      );
+    try {
+      const transporter = await prisma.shipToParty.create({
+        data: {
+          name,
+          address,
+          GSTIN,
+          state,
+          companyId,
+        },
+      });
+      return res
+        .status(201)
+        .json(
+          new ApiResponse(201, transporter, "Transported created successfully")
+        );
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        return next(
+          new ApiError(400, "Client with this GSTIN already exists", [
+            "Client with this GSTIN already exists",
+          ])
+        );
+      }
+      return next(error);
+    }
   }
 );
 
@@ -67,7 +84,7 @@ export const deleteTransporter = asyncHandler(
 );
 
 export const updateTransporter = asyncHandler(
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     if (!req.company) {
       throw new ApiError(401, "Unauthorized Access. Please login again", [
         "Unauthorized Access. Please login again",
@@ -80,26 +97,40 @@ export const updateTransporter = asyncHandler(
       where: { id: transporterId, companyId },
     });
     if (!transporterExists) {
-      throw new ApiError(404, "Transporter not found", [
-        "Transporter not found",
-      ]);
+      return next(
+        new ApiError(404, "Transporter not found", ["Transporter not found"])
+      );
     }
 
-    const transporter = await prisma.shipToParty.update({
-      where: { id: transporterId, companyId },
-      data: {
-        name: name !== undefined ? name : undefined,
-        address: address !== undefined ? address : undefined,
-        GSTIN: GSTIN !== undefined ? GSTIN : undefined,
-        state: state !== undefined ? state : undefined,
-      },
-    });
+    try {
+      const transporter = await prisma.shipToParty.update({
+        where: { id: transporterId, companyId },
+        data: {
+          name: name !== undefined ? name : undefined,
+          address: address !== undefined ? address : undefined,
+          GSTIN: GSTIN !== undefined ? GSTIN : undefined,
+          state: state !== undefined ? state : undefined,
+        },
+      });
 
-    return res
-      .status(200)
-      .json(
-        new ApiResponse(200, transporter, "Transporter updated successfully")
-      );
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(200, transporter, "Transporter updated successfully")
+        );
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        return next(
+          new ApiError(400, "Client with this GSTIN already exists", [
+            "Client with this GSTIN already exists",
+          ])
+        );
+      }
+      return next(error);
+    }
   }
 );
 

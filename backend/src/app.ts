@@ -1,4 +1,9 @@
-import express from "express";
+import express, {
+  ErrorRequestHandler,
+  NextFunction,
+  Request,
+  Response,
+} from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import passport from "./config/passport";
@@ -59,5 +64,20 @@ app.use("/purchase", purchaseRoutes);
 app.get("/", (req, res) => {
   res.send("API is running");
 });
+
+const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+  console.error("Error middleware caught:", err);
+
+  const statusCode = (err as any).statusCode || 500;
+  const message = (err as any).message || "Internal Server Error";
+
+  res.status(statusCode).json({
+    success: false,
+    message,
+    errors: (err as any).errors || [],
+  });
+};
+
+app.use(errorHandler);
 
 export default app;
