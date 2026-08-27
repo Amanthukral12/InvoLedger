@@ -32,11 +32,11 @@ const UpdateInvoice = () => {
   const { transporterQuery } = useTransporter();
   const clients = React.useMemo(
     () => clientQuery.data ?? [],
-    [clientQuery.data]
+    [clientQuery.data],
   );
   const transporters = React.useMemo(
     () => transporterQuery.data ?? [],
-    [transporterQuery.data]
+    [transporterQuery.data],
   );
   const { updateInvoiceMutation } = useInvoice();
   const { data: fetchedInvoice, isLoading } = useQuery<Invoice>({
@@ -56,6 +56,8 @@ const UpdateInvoice = () => {
     ewayBill: false,
     ewayBillNumber: "",
     amount: 0,
+    discountPercent: 0,
+    discountAmount: 0,
     cartage: 0,
     subTotal: 0,
     totalIgst: 0,
@@ -99,6 +101,8 @@ const UpdateInvoice = () => {
         ewayBill: fetchedInvoice.ewayBill || false,
         ewayBillNumber: fetchedInvoice.ewayBillNumber || "",
         amount: fetchedInvoice.amount || 0,
+        discountPercent: fetchedInvoice.discountPercent || 0,
+        discountAmount: fetchedInvoice.discountAmount || 0,
         cartage: fetchedInvoice.cartage || 0,
         subTotal: fetchedInvoice.subTotal || 0,
         totalCgst: fetchedInvoice.totalCgst || 0,
@@ -124,14 +128,14 @@ const UpdateInvoice = () => {
           quantity: item.quantity || 0,
           unitPrice: item.unitPrice || 0,
           amount: item.amount || 0,
-        }))
+        })),
       );
     }
   }, [fetchedInvoice]);
 
   useEffect(() => {
     const selectedClient = clients.find(
-      (client: Client) => client.id === formData.clientId
+      (client: Client) => client.id === formData.clientId,
     );
     if (selectedClient) {
       setClientState(selectedClient.state);
@@ -140,7 +144,7 @@ const UpdateInvoice = () => {
 
   const handleItemChange = (
     index: number,
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const { name, value } = e.target;
 
@@ -177,10 +181,10 @@ const UpdateInvoice = () => {
         updatedItem.sgstPercent = halfTax;
         updatedItem.igstPercent = 0;
         updatedItem.cgst = parseFloat(
-          ((halfTax * updatedItem.amount) / 100).toFixed(2)
+          ((halfTax * updatedItem.amount) / 100).toFixed(2),
         );
         updatedItem.sgst = parseFloat(
-          ((halfTax * updatedItem.amount) / 100).toFixed(2)
+          ((halfTax * updatedItem.amount) / 100).toFixed(2),
         );
         updatedItem.igst = 0;
       } else {
@@ -190,7 +194,7 @@ const UpdateInvoice = () => {
         updatedItem.cgst = 0;
         updatedItem.sgst = 0;
         updatedItem.igst = parseFloat(
-          ((taxPercent * updatedItem.amount) / 100).toFixed(2)
+          ((taxPercent * updatedItem.amount) / 100).toFixed(2),
         );
       }
 
@@ -228,7 +232,7 @@ const UpdateInvoice = () => {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
 
@@ -244,7 +248,7 @@ const UpdateInvoice = () => {
       return;
     }
 
-    const numericFields = ["cartage"];
+    const numericFields = ["cartage", "discountPercent", "discountAmount"];
     setFormData((prev) => ({
       ...prev,
       [name]: numericFields.includes(name)
@@ -255,12 +259,35 @@ const UpdateInvoice = () => {
 
   useEffect(() => {
     const itemsAmount = parseFloat(
-      invoiceItems.reduce((sum, item) => sum + item.amount, 0).toFixed(2)
+      invoiceItems.reduce((sum, item) => sum + item.amount, 0).toFixed(2),
     );
+    const discountAmount = roundCurrency(
+      (itemsAmount * formData.discountPercent) / 100,
+    );
+    const discountedItemsAmount = roundCurrency(itemsAmount - discountAmount);
+    const discountedInvoiceItems = invoiceItems.map((item) => {
+      const proportion = itemsAmount > 0 ? item.amount / itemsAmount : 0;
+      const itemDiscount = roundCurrency(discountAmount * proportion);
+
+      const discountedAmount = roundCurrency(item.amount - itemDiscount);
+      const sgst = roundCurrency((discountedAmount * item.sgstPercent) / 100);
+
+      const cgst = roundCurrency((discountedAmount * item.cgstPercent) / 100);
+
+      const igst = roundCurrency((discountedAmount * item.igstPercent) / 100);
+      return {
+        ...item,
+        amount: discountedAmount,
+        sgst,
+        cgst,
+        igst,
+      };
+    });
+
     let cartageTax = 0;
     if (itemsAmount > 0) {
-      cartageTax = invoiceItems.reduce((sum, item) => {
-        const proportion = item.amount / itemsAmount;
+      cartageTax = discountedInvoiceItems.reduce((sum, item) => {
+        const proportion = item.amount / discountedItemsAmount;
         return sum + formData.cartage * proportion * (item.taxPercent / 100);
       }, 0);
       cartageTax = roundCurrency(cartageTax);
@@ -278,29 +305,35 @@ const UpdateInvoice = () => {
     } else {
       cartageIgst = cartageTax;
     }
-    const subTotal = itemsAmount + parseFloat(formData.cartage.toFixed(2));
+    const subTotal =
+      itemsAmount -
+      parseFloat(formData.discountAmount.toFixed(2)) +
+      parseFloat(formData.cartage.toFixed(2));
 
     const totalSgst = parseFloat(
       (
-        invoiceItems.reduce((sum, item) => sum + item.sgst, 0) + cartageSgst
-      ).toFixed(2)
+        discountedInvoiceItems.reduce((sum, item) => sum + item.sgst, 0) +
+        cartageSgst
+      ).toFixed(2),
     );
     const totalCgst = parseFloat(
       (
-        invoiceItems.reduce((sum, item) => sum + item.cgst, 0) + cartageCgst
-      ).toFixed(2)
+        discountedInvoiceItems.reduce((sum, item) => sum + item.cgst, 0) +
+        cartageCgst
+      ).toFixed(2),
     );
     const totalIgst = parseFloat(
       (
-        invoiceItems.reduce((sum, item) => sum + item.igst, 0) + cartageIgst
-      ).toFixed(2)
+        discountedInvoiceItems.reduce((sum, item) => sum + item.igst, 0) +
+        cartageIgst
+      ).toFixed(2),
     );
 
     const totalAmount = Math.round(
       subTotal +
         parseFloat(totalSgst.toFixed(2)) +
         parseFloat(totalCgst.toFixed(2)) +
-        parseFloat(totalIgst.toFixed(2))
+        parseFloat(totalIgst.toFixed(2)),
     );
 
     const amountInWords = inWords(totalAmount)?.toLocaleUpperCase() || "";
@@ -308,6 +341,7 @@ const UpdateInvoice = () => {
     setFormData((prev) => ({
       ...prev,
       amount: itemsAmount,
+      discountAmount,
       totalCgst,
       totalSgst,
       totalIgst,
@@ -315,7 +349,14 @@ const UpdateInvoice = () => {
       totalAmount,
       totalAmountInWords: amountInWords,
     }));
-  }, [invoiceItems, formData.cartage, clientState, company?.state]);
+  }, [
+    invoiceItems,
+    formData.cartage,
+    formData.discountAmount,
+    formData.discountPercent,
+    clientState,
+    company?.state,
+  ]);
 
   useEffect(() => {
     if (invoiceItems.length > 0) {
@@ -346,7 +387,7 @@ const UpdateInvoice = () => {
               igst: parseFloat(((taxPercent * item.amount) / 100).toFixed(2)),
             };
           }
-        })
+        }),
       );
     }
   }, [clientState, company?.state, invoiceItems.length]);
@@ -525,7 +566,7 @@ const UpdateInvoice = () => {
                             function (e) {
                               e.preventDefault();
                             },
-                            { passive: false }
+                            { passive: false },
                           )
                         }
                         value={item.quantity}
@@ -546,7 +587,7 @@ const UpdateInvoice = () => {
                             function (e) {
                               e.preventDefault();
                             },
-                            { passive: false }
+                            { passive: false },
                           )
                         }
                         value={item.unitPrice}
@@ -565,7 +606,7 @@ const UpdateInvoice = () => {
                             function (e) {
                               e.preventDefault();
                             },
-                            { passive: false }
+                            { passive: false },
                           )
                         }
                         value={item.amount}
@@ -586,7 +627,7 @@ const UpdateInvoice = () => {
                             function (e) {
                               e.preventDefault();
                             },
-                            { passive: false }
+                            { passive: false },
                           )
                         }
                         value={item.taxPercent}
@@ -607,7 +648,7 @@ const UpdateInvoice = () => {
                             function (e) {
                               e.preventDefault();
                             },
-                            { passive: false }
+                            { passive: false },
                           )
                         }
                         value={item.sgstPercent}
@@ -628,7 +669,7 @@ const UpdateInvoice = () => {
                             function (e) {
                               e.preventDefault();
                             },
-                            { passive: false }
+                            { passive: false },
                           )
                         }
                         value={item.cgstPercent}
@@ -649,7 +690,7 @@ const UpdateInvoice = () => {
                             function (e) {
                               e.preventDefault();
                             },
-                            { passive: false }
+                            { passive: false },
                           )
                         }
                         value={item.igstPercent}
@@ -691,7 +732,7 @@ const UpdateInvoice = () => {
                       function (e) {
                         e.preventDefault();
                       },
-                      { passive: false }
+                      { passive: false },
                     )
                   }
                   placeholder="Amount"
@@ -701,6 +742,59 @@ const UpdateInvoice = () => {
                 />
               </div>
 
+              <div className="flex flex-col">
+                <label
+                  htmlFor="discountPercent"
+                  className="mb-1 text-sm font-medium "
+                >
+                  Discount Percent
+                </label>
+                <input
+                  type="number"
+                  onFocus={(e) =>
+                    e.target.addEventListener(
+                      "wheel",
+                      function (e) {
+                        e.preventDefault();
+                      },
+                      { passive: false },
+                    )
+                  }
+                  id="discountPercent"
+                  name="discountPercent"
+                  placeholder="Discount Percent"
+                  value={parseFloat(formData.discountPercent.toFixed(2))}
+                  onChange={handleChange}
+                  className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label
+                  htmlFor="discountAmount"
+                  className="mb-1 text-sm font-medium "
+                >
+                  Discount Amount
+                </label>
+                <input
+                  type="number"
+                  onFocus={(e) =>
+                    e.target.addEventListener(
+                      "wheel",
+                      function (e) {
+                        e.preventDefault();
+                      },
+                      { passive: false },
+                    )
+                  }
+                  id="discountAmount"
+                  name="discountAmount"
+                  placeholder="Discount Amount"
+                  value={parseFloat(formData.discountAmount.toFixed(2))}
+                  readOnly
+                  className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-main focus:border-transparent outline-none text-sm"
+                />
+              </div>
               <div className="flex flex-col">
                 <label htmlFor="cartage" className="mb-1 text-sm font-medium ">
                   Cartage
@@ -715,7 +809,7 @@ const UpdateInvoice = () => {
                       function (e) {
                         e.preventDefault();
                       },
-                      { passive: false }
+                      { passive: false },
                     )
                   }
                   placeholder="Cartage"
@@ -739,7 +833,7 @@ const UpdateInvoice = () => {
                       function (e) {
                         e.preventDefault();
                       },
-                      { passive: false }
+                      { passive: false },
                     )
                   }
                   placeholder="Sub Total"
@@ -765,7 +859,7 @@ const UpdateInvoice = () => {
                       function (e) {
                         e.preventDefault();
                       },
-                      { passive: false }
+                      { passive: false },
                     )
                   }
                   placeholder="Total CGST"
@@ -791,7 +885,7 @@ const UpdateInvoice = () => {
                       function (e) {
                         e.preventDefault();
                       },
-                      { passive: false }
+                      { passive: false },
                     )
                   }
                   placeholder="Total SGST"
@@ -817,7 +911,7 @@ const UpdateInvoice = () => {
                       function (e) {
                         e.preventDefault();
                       },
-                      { passive: false }
+                      { passive: false },
                     )
                   }
                   placeholder="Total IGST"
@@ -842,7 +936,7 @@ const UpdateInvoice = () => {
                       function (e) {
                         e.preventDefault();
                       },
-                      { passive: false }
+                      { passive: false },
                     )
                   }
                   placeholder="Total Amount"

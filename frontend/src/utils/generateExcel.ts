@@ -4,7 +4,7 @@ export const generateExcel = async (
   invoicesData: Invoice[],
   selectedMonth: number,
   selectedYear: number,
-  companyName: string
+  companyName: string,
 ) => {
   const ExcelJS = await import("exceljs");
   const workbook = new ExcelJS.Workbook();
@@ -19,6 +19,8 @@ export const generateExcel = async (
     { header: "E-Way Bill Number", key: "ewayBillNumber", width: 30 },
     { header: "Total Amount", key: "totalAmount", width: 15 },
     { header: "Amount", key: "amount", width: 12 },
+    { header: "Discount Percent", key: "discountPercent", width: 15 },
+    { header: "Discount Amount", key: "discountAmount", width: 15 },
     { header: "Cartage", key: "cartage", width: 10 },
     { header: "TotalCGST", key: "totalCgst", width: 10 },
     { header: "TotalSGST", key: "totalSgst", width: 10 },
@@ -53,6 +55,8 @@ export const generateExcel = async (
         totalCgst: index === 0 ? invoice.totalCgst : "",
         totalSgst: index === 0 ? invoice.totalSgst : "",
         totalIgst: index === 0 ? invoice.totalIgst : "",
+        discountAmount: index === 0 ? invoice.discountAmount : 0,
+        discountPercent: index === 0 ? invoice.discountPercent : 0,
         description: item.description,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
@@ -80,19 +84,19 @@ export const generateExcel = async (
 
   const totalAmount = invoicesData.reduce(
     (sum, inv) => sum + inv.totalAmount,
-    0
+    0,
   );
   const totalCgst = invoicesData.reduce(
     (sum, inv) => sum + (inv.totalCgst ?? 0),
-    0
+    0,
   );
   const totalSgst = invoicesData.reduce(
     (sum, inv) => sum + (inv.totalSgst ?? 0),
-    0
+    0,
   );
   const totalIgst = invoicesData.reduce(
     (sum, inv) => sum + (inv.totalIgst ?? 0),
-    0
+    0,
   );
 
   worksheet.addRow({});
@@ -105,6 +109,8 @@ export const generateExcel = async (
     quantity: "",
     unitPrice: "",
     amount: "",
+    discountAmount: "",
+    discountPercent: "",
     totalCgst: totalCgst,
     totalSgst: totalSgst,
     totalIgst: totalIgst,

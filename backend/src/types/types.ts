@@ -70,6 +70,8 @@ export interface InvoiceDocument {
   ewayBill: boolean;
   ewayBillNumber: string | null;
   amount: number;
+  discountPercent: number | null;
+  discountAmount: number | null;
   cartage: number | null;
   subTotal: number;
   totalIgst: number | null;
