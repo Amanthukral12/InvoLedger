@@ -318,23 +318,36 @@ export const generateInvoicePdf = (
     .font("Helvetica")
     .text(`${invoiceData.amount}`, valueX, yPosition, { align: "right" });
 
-  doc.font("Helvetica").text(`Cartage:`, labelX, yPosition + 20);
-  doc.font("Helvetica").text(`${invoiceData.cartage}`, valueX, yPosition + 20, {
+  doc
+    .font("Helvetica")
+    .text(
+      `Discount: (${invoiceData.discountPercent !== null ? invoiceData.discountPercent : 0}%)`,
+      labelX,
+      yPosition + 20
+    );
+  doc
+    .font("Helvetica")
+    .text(`${invoiceData.discountAmount}`, valueX, yPosition + 20, {
+      align: "right",
+    });
+
+  doc.font("Helvetica").text(`Cartage:`, labelX, yPosition + 40);
+  doc.font("Helvetica").text(`${invoiceData.cartage}`, valueX, yPosition + 40, {
     align: "right",
   });
 
-  doc.font("Helvetica").text(`Total CGST:`, labelX, yPosition + 40);
-  doc.text(`${invoiceData.totalCgst}`, valueX, yPosition + 40, {
+  doc.font("Helvetica").text(`Total CGST:`, labelX, yPosition + 60);
+  doc.text(`${invoiceData.totalCgst}`, valueX, yPosition + 60, {
     align: "right",
   });
 
-  doc.font("Helvetica").text(`Total SGST:`, labelX, yPosition + 60);
-  doc.text(`${invoiceData.totalSgst}`, valueX, yPosition + 60, {
+  doc.font("Helvetica").text(`Total SGST:`, labelX, yPosition + 80);
+  doc.text(`${invoiceData.totalSgst}`, valueX, yPosition + 80, {
     align: "right",
   });
 
-  doc.font("Helvetica").text(`Total IGST:`, labelX, yPosition + 80);
-  doc.text(`${invoiceData.totalIgst}`, valueX, yPosition + 80, {
+  doc.font("Helvetica").text(`Total IGST:`, labelX, yPosition + 100);
+  doc.text(`${invoiceData.totalIgst}`, valueX, yPosition + 100, {
     align: "right",
   });
 
@@ -346,8 +359,8 @@ export const generateInvoicePdf = (
 
   doc
     .font("Helvetica-Bold")
-    .text("Total Amount:", labelX, yPosition + 100)
-    .text(`${invoiceData.totalAmount}`, valueX, yPosition + 100, {
+    .text("Total Amount:", labelX, yPosition + 120)
+    .text(`${invoiceData.totalAmount}`, valueX, yPosition + 120, {
       align: "right",
     });
 
@@ -375,6 +388,6 @@ export const generateInvoicePdf = (
   doc
     .font("Helvetica")
     .fontSize(10)
-    .text("Authorized Signatory", 400, doc.y + 50, { align: "right" });
+    .text("Authorized Signatory", 400, doc.y + 40, { align: "right" });
   doc.end();
 };

@@ -80,6 +80,8 @@ model Invoice {
   ewayBill           Boolean      @default(false)
   ewayBillNumber     String?
   amount             Float
+  discountPercent    Float?       @default(0)
+  discountAmount     Float?       @default(0)
   cartage            Float?
   subTotal           Float
   totalIgst          Float?
